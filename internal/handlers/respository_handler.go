@@ -1,24 +1,19 @@
 package handlers
 
 import (
-	"github-service/internal/repository"
-	"github-service/pkg/github"
-	"net/http"
-
+	"github-service/internal/service"
 	"github.com/gin-gonic/gin"
-
 	"gorm.io/gorm"
+	"net/http"
 )
 
 func FetchRepositoryData(c *gin.Context, db *gorm.DB) {
 	repo := c.Param("repo")
-	r, err := github.FetchRepositoryData(repo)
+	r, err := service.RepositoryService(repo, db)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch repository data"})
 		return
 	}
-
-	repository.SaveRepository(db, r)
 
 	c.JSON(http.StatusOK, r)
 }

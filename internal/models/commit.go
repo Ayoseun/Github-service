@@ -1,15 +1,19 @@
 package models
 
-import "gorm.io/gorm"
+import (
+	"time"
+
+	"gorm.io/gorm"
+)
 
 type Commit struct {
 	Author      interface{} `json:"author"`
 	CommentsURL string      `json:"comments_url"`
 	Commit      struct {
 		Author struct {
-			Date  string `json:"date"`
-			Email string `json:"email"`
-			Name  string `json:"name"`
+			Date  time.Time `json:"date"`
+			Email string    `json:"email"`
+			Name  string    `json:"name"`
 		} `json:"author"`
 		CommentCount int `json:"comment_count"`
 		Committer    struct {
@@ -44,8 +48,8 @@ type Commit struct {
 
 type SavedCommit struct {
 	gorm.Model
-	Message string `json:"message"`
-	Author  string `json:"author"`
-	Date    string `json:"date"`
-	URL     string `json:"url"`
+	Message string    `json:"message"`
+	Author  string    `json:"author"`
+	Date    time.Time `json:"date"`
+	URL     string    `json:"url"`
 }

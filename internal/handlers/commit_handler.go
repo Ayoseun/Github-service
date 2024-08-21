@@ -6,32 +6,31 @@ import (
 	"net/http"
 	"strconv"
 
-	"github-service/pkg/github"
-
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
 
-func FetchRepositoryCommits(c *gin.Context, db *gorm.DB) {
-	repo := c.Param("repo")
-	commits, err := github.FetchRepositoryCommits(repo)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch external data"})
-		return
-	}
+// func FetchRepositoryCommits(c *gin.Context, db *gorm.DB) {
+// 	repo := c.Param("repo")
+// 	commits, err := github.FetchRepositoryCommits(repo)
+// 	if err != nil {
+// 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch external data"})
+// 		return
+// 	}
 
-	for _, commit := range commits {
-		savedCommit := &models.SavedCommit{
-			Message: commit.Commit.Message,
-			Author:  commit.Commit.Author.Name,
-			Date:    commit.Commit.Author.Date,
-			URL:     commit.HTMLURL,
-		}
-		repository.SaveCommit(db, savedCommit)
-	}
+// 	for _, commit := range commits {
+// 		savedCommit := &models.SavedCommit{
+// 			Message: commit.Commit.Message,
+// 			Author:  commit.Commit.Author.Name,
+// 			Date:    commit.Commit.Author.Date,
+// 			URL:     commit.HTMLURL,
+// 		}
+// 		repository.SaveCommits(db, savedCommit)
+// 	}
 
-	c.JSON(http.StatusOK, commits)
-}
+// 	c.JSON(http.StatusOK, commits)
+// }
+
 func RetrieveCommitsByRepository(c *gin.Context, db *gorm.DB) {
 	repo := c.Param("repo")
 

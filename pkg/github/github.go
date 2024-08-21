@@ -51,6 +51,7 @@ func FetchRepositoryData(repo string) (*models.Repository, error) {
 	}
 
 	var r models.Repository
+
 	if err := json.Unmarshal(body, &r); err != nil {
 		return nil, err
 	}

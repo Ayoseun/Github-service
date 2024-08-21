@@ -3,11 +3,10 @@ package repository
 import (
 	"fmt"
 	"github-service/internal/models"
-
 	"gorm.io/gorm"
 )
 
-func SaveCommit(db *gorm.DB, commit *models.SavedCommit) error {
+func SaveCommits(db *gorm.DB, commit *models.SavedCommit) error {
 	return db.Create(commit).Error
 }
 

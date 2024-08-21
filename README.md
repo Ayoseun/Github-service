@@ -63,52 +63,75 @@ The solution is structured using a modular approach, with the following key comp
 - Installation:
 
 Clone the repository:
-Copygit clone https://github.com/your-github-username/github-api.git
+```shell
+ clone https://github.com/Ayoseun/Github-service
+ ```
 
 Navigate to the project directory:
-Copycd github-api
+```shell
+cd github-service
+```
 
 Update the database connection details in the internal/config/config.go file.
+
 Build and run the application:
-Copygo build -o github-api ./cmd
-./github-api
+```shell
+build -o github-service ./cmd
+```
+```shell
+./github-service
+```
 
 
 
 
-Usage
+### Usage
 The service provides the following endpoints:
 
-Fetch Repository Commits: GET /:repo/fetch_commits
+- Fetch Repository Commits: 
+```shell 
+GET /:repo/fetch_commits
+```
 
 Fetches the commits for the given repository and saves them to the database.
 
 
-Fetch Repository Data: GET /fetch_repository/:repo
+Fetch Repository Data: 
+```shell 
+GET /fetch_repository/:repo
+```
 
 Fetches the repository metadata for the given repository and saves it to the database.
 
 
-Get Top N Commit Authors: GET /top_authors/:n
+Get Top N Commit Authors: 
+```shell 
+GET /top_authors/:n
+```
 
 Retrieves the top N commit authors by commit count from the database.
 Supports pagination using the page and limit query parameters.
 
 
-Retrieve Commits by Repository: GET /commits/:repo
+Retrieve Commits by Repository:
+```shell 
+ GET /commits/:repo
+ ```
 
 Retrieves the commits for the given repository from the database.
 Supports pagination using the page and limit query parameters.
 
 
 
-Continuous Monitoring and Data Fetching
+- Continuous Monitoring and Data Fetching
 The service is designed to continuously monitor the repository for changes and fetch new data at regular intervals (e.g., every hour). This is achieved by implementing a background task or a cron job that periodically calls the fetchRepositoryCommits and fetchRepositoryData functions.
 To reset the data collection to start from a specific point in time, you can add a new endpoint or a command-line utility that allows the user to update the starting date for the commit fetching process.
 Data Storage and Querying
 The solution uses a PostgreSQL database to store the repository details and commit data. The database schema is designed to ensure efficient querying of the data.
 The SavedCommit and Repository models are used to represent the commit and repository data, respectively. The GetTopNCommitAuthors and GetCommitsByRepository functions in the repository package provide the necessary functionality to retrieve the top N commit authors and commits for a specific repository.
-Unit Tests
+
+### Unit Tests
 The solution includes at least one unit test for a core function of the service, such as the GetTopNCommitAuthors function in the repository package.
-Conclusion
+
+### Conclusion
 This Go-based service provides a comprehensive solution for fetching data from the GitHub public API, storing the data in a persistent database, and offering efficient querying mechanisms. The modular design, adherence to best practices, and inclusion of unit tests ensure the maintainability and scalability of the application.
