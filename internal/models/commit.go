@@ -53,3 +53,10 @@ type SavedCommit struct {
 	Date    time.Time `json:"date"`
 	URL     string    `json:"url"`
 }
+
+// PaginatedResponse is the response structure for paginated commit data
+type PaginatedResponse struct {
+	CurrentPage int           `json:"current_page"`
+	TotalPages  int           `json:"total_pages"`
+	Commits     []SavedCommit `json:"commits"`
+}

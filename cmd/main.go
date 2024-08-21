@@ -5,15 +5,13 @@ import (
 	"github-service/internal/database"
 	"github-service/internal/routes"
 	"github-service/internal/service"
-
-	//"github-service/internal/service"
-
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
 	// Initialize database
-	db := database.Connect(config.GetDatabaseConfig())
+
+	db := database.Connect(config.GetDatabaseConfig("development"))
 	//gin.SetMode(gin.ReleaseMode)
 	// Create Gin router
 	router := gin.Default()

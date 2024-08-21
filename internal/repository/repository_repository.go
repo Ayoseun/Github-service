@@ -1,20 +1,32 @@
 package repository
 
 import (
-	"github-service/internal/models"
-
-	"gorm.io/gorm"
+	"github-service/internal/models" // Importing the models package from the project's internal directory
+	"gorm.io/gorm"                   // Importing the GORM (Object-Relational Mapping) library for database interactions
 )
 
-func SaveRepositories(db *gorm.DB, repository *models.Repository) error {
+// Repository is a struct that represents a repository for managing repositories and their commit authors
+type Repository struct {
+	DB *gorm.DB // Holds a reference to the database connection
+}
+
+// NewRepository is a constructor function that creates a new instance of the Repository
+func NewRepository(db *gorm.DB) *Repository {
+	return &Repository{
+		DB: db, // Initializing the DB field with the provided GORM database instance
+	}
+}
+
+// SaveRepository saves a repository to the database, creating a new one if it doesn't exist, or updating an existing one
+func (r *Repository) SaveRepository(repository *models.Repository) error {
 	// Check if the repository already exists
 	var existingRepo models.Repository
-	result := db.Where("name = ?", repository.Name).First(&existingRepo)
+	result := r.DB.Where("name = ?", repository.Name).First(&existingRepo)
 
 	if result.Error != nil {
 		if result.Error == gorm.ErrRecordNotFound {
 			// Repository doesn't exist, create a new one
-			return db.Create(repository).Error
+			return r.DB.Create(repository).Error
 		} else {
 			// Other error occurred, return it
 			return result.Error
@@ -32,10 +44,11 @@ func SaveRepositories(db *gorm.DB, repository *models.Repository) error {
 	existingRepo.CreatedAt = repository.CreatedAt
 	existingRepo.UpdatedAt = repository.UpdatedAt
 	existingRepo.SubscribersCount = repository.SubscribersCount
-	return db.Save(&existingRepo).Error
+	return r.DB.Save(&existingRepo).Error
 }
 
-func GetTopNCommitAuthors(db *gorm.DB, n, page, limit int) ([]struct {
+// GetTopNCommitAuthors retrieves the top N commit authors, with pagination support
+func (r *Repository) GetTopNCommitAuthors(n, page, limit int) ([]struct {
 	Author string `json:"author"`
 	Count  int    `json:"count"`
 }, error) {
@@ -44,7 +57,7 @@ func GetTopNCommitAuthors(db *gorm.DB, n, page, limit int) ([]struct {
 		Count  int    `json:"count"`
 	}
 
-	err := db.Model(&models.SavedCommit{}).
+	err := r.DB.Model(&models.SavedCommit{}).
 		Select("author, count(author) as count").
 		Group("author").
 		Order("count desc").
