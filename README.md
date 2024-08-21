@@ -1,6 +1,6 @@
 # GitHub API Data Fetching and Service
 
- ![Postman Task Documentation URL](https://documenter.getpostman.com/view/17643992/2sA3sAhnpi)
+ !(https://img.shields.io/badge/Postman%20docs-F66A0A)(https://documenter.getpostman.com/view/17643992/2sA3sAhnpi)
 
 ## Overview
 This is a Go-based service that fetches data from the GitHub public API, stores the fetched data in a persistent database, and provides mechanisms to efficiently query the stored data.
