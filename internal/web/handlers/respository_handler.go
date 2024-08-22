@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"github-service/internal/service"
+	"github-service/internal/domain/service"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"net/http"

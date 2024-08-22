@@ -1,10 +1,12 @@
 package service
 
 import (
-	"github-service/internal/models"     // Importing the models package from the project's internal directory
-	"github-service/internal/repository" // Importing the repository package from the project's internal directory
-	"github-service/pkg/github"          // Importing the GitHub package from the project's pkg directory
-	"gorm.io/gorm"                       // Importing the GORM (Object-Relational Mapping) library for database interactions
+	"github-service/internal/database/repository"
+	"github-service/internal/domain/models" // Importing the models package from the project's internal directory
+	// Importing the repository package from the project's internal directory
+	"github-service/pkg/github" // Importing the GitHub package from the project's pkg directory
+
+	"gorm.io/gorm" // Importing the GORM (Object-Relational Mapping) library for database interactions
 )
 
 // RepositoryService fetches the repository data from GitHub and saves it to the database

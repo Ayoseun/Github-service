@@ -1,9 +1,11 @@
 package routes
 
 import (
-	"github-service/internal/handlers" // Importing the handlers package from the project's internal directory
-	"github.com/gin-gonic/gin"         // Importing the Gin web framework
-	"gorm.io/gorm"                     // Importing the GORM (Object-Relational Mapping) library for database interactions
+	// Importing the handlers package from the project's internal directory
+	"github-service/internal/web/handlers"
+
+	"github.com/gin-gonic/gin" // Importing the Gin web framework
+	"gorm.io/gorm"             // Importing the GORM (Object-Relational Mapping) library for database interactions
 )
 
 // APPRoutes sets up the API routes for the application

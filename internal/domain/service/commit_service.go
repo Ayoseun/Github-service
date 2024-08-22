@@ -1,10 +1,10 @@
 package service
 
 import (
-	"github-service/internal/models"     // Importing the models package from the project's internal directory
-	"github-service/internal/repository" // Importing the repository package from the project's internal directory
-	"github-service/pkg/github"          // Importing the GitHub package from the project's pkg directory
-	"time"                               // Importing the time package from the standard library
+	"github-service/internal/database/repository" // Importing the repository package from the project's internal directory
+	"github-service/internal/domain/models"       // Importing the models package from the project's internal directory
+	"github-service/pkg/github"                   // Importing the GitHub package from the project's pkg directory
+	"time"                                        // Importing the time package from the standard library
 
 	"gorm.io/gorm" // Importing the GORM (Object-Relational Mapping) library for database interactions
 )

@@ -1,8 +1,8 @@
-package database
+package storage
 
 import (
 	"github-service/internal/config"
-	"github-service/internal/models"
+	"github-service/internal/domain/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -13,7 +13,7 @@ func Connect(config config.DatabaseConfig) *gorm.DB {
 	db, err := gorm.Open(postgres.Open(config.DSN), &gorm.Config{})
 	if err != nil {
 		// If there's an error connecting to the database, panic
-		panic("failed to connect database")
+		panic(err)
 	}
 
 	// Migrate the database schema by automatically creating the necessary tables

@@ -3,7 +3,7 @@ package github
 import (
 	"encoding/json"
 	"fmt"
-	"github-service/internal/models"
+	"github-service/internal/domain/models"
 	"io"
 	"net/http"
 )

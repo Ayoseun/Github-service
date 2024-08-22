@@ -2,16 +2,16 @@ package main
 
 import (
 	"github-service/internal/config"
-	"github-service/internal/database"
-	"github-service/internal/routes"
-	"github-service/internal/service"
+	"github-service/internal/database/storage"
+	"github-service/internal/domain/service"
+	"github-service/internal/web/routes"
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
 	// Initialize database
 
-	db := database.Connect(config.GetDatabaseConfig("development"))
+	db := storage.Connect(config.GetDatabaseConfig("development"))
 	//gin.SetMode(gin.ReleaseMode)
 	// Create Gin router
 	router := gin.Default()

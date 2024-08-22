@@ -3,8 +3,9 @@ package handlers
 import (
 	"errors"
 	"fmt"
-	"github-service/internal/models"
-	"github-service/internal/repository"
+	"github-service/internal/database/repository"
+	"github-service/internal/domain/models"
+
 	"net/http"
 	"strconv"
 

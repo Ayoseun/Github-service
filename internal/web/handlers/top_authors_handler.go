@@ -1,11 +1,12 @@
 package handlers
 
 import (
-	"github-service/internal/repository"
-	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
+	"github-service/internal/database/repository"
 	"net/http"
 	"strconv"
+
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 // GetTopNCommitAuthors is a Gin handler that retrieves the top N commit authors

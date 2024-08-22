@@ -1,9 +1,9 @@
 package repository
 
 import (
-	"fmt"                            // Standard library package for formatting and printing
-	"github-service/internal/models" // Importing the models package from the project's internal directory
-	"gorm.io/gorm"                   // Importing the GORM (Object-Relational Mapping) library for database interactions
+	"fmt"                                   // Standard library package for formatting and printing
+	"github-service/internal/domain/models" // Importing the models package from the project's internal directory
+	"gorm.io/gorm"                          // Importing the GORM (Object-Relational Mapping) library for database interactions
 )
 
 // CommitRepository is a struct that represents a repository for managing commits

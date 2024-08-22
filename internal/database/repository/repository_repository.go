@@ -1,8 +1,8 @@
 package repository
 
 import (
-	"github-service/internal/models" // Importing the models package from the project's internal directory
-	"gorm.io/gorm"                   // Importing the GORM (Object-Relational Mapping) library for database interactions
+	"github-service/internal/domain/models" // Importing the models package from the project's internal directory
+	"gorm.io/gorm"                          // Importing the GORM (Object-Relational Mapping) library for database interactions
 )
 
 // Repository is a struct that represents a repository for managing repositories and their commit authors
