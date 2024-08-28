@@ -11,8 +11,6 @@ import (
 
 // RepositoryService fetches the repository data from GitHub and saves it to the database
 func RepositoryService(repo string, db *gorm.DB) (*models.Repository, error) {
-	// Create a new instance of the Repository
-	rRepo := repository.NewRepository(db)
 
 	// Fetch the repository data from GitHub
 	r, err := github.FetchRepositoryData(repo)
@@ -20,9 +18,11 @@ func RepositoryService(repo string, db *gorm.DB) (*models.Repository, error) {
 		// Handle the error, e.g., log it or return the error
 		return nil, err
 	}
+	// Create a new instance of the Repository
+	dbInstance := repository.NewRepository(db)
 
 	// Save the repository data to the database
-	err = rRepo.SaveRepository(r)
+	err = dbInstance.SaveRepository(r)
 	if err != nil {
 		// Handle the error, e.g., log it or return the error
 		return nil, err

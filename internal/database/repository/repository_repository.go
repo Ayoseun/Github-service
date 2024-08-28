@@ -2,7 +2,8 @@ package repository
 
 import (
 	"github-service/internal/domain/models" // Importing the models package from the project's internal directory
-	"gorm.io/gorm"                          // Importing the GORM (Object-Relational Mapping) library for database interactions
+
+	"gorm.io/gorm" // Importing the GORM (Object-Relational Mapping) library for database interactions
 )
 
 // Repository is a struct that represents a repository for managing repositories and their commit authors
@@ -64,6 +65,5 @@ func (r *Repository) GetTopNCommitAuthors(n, page, limit int) ([]struct {
 		Limit(limit).
 		Offset((page - 1) * limit).
 		Scan(&authors).Error
-
 	return authors, err
 }

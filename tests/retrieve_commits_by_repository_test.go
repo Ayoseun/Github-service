@@ -1,7 +1,7 @@
 package repository_test
 
 import (
-	"github-service/internal/models"
+	"github-service/internal/domain/models"
 	"github-service/internal/web/handlers"
 	"net/http"
 	"net/http/httptest"

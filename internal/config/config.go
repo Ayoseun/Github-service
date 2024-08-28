@@ -13,8 +13,8 @@ type DatabaseConfig struct {
 
 // Config struct holds the application configuration
 type Config struct {
-	DATABASE_DEV_URL   string `mapstructure:"DATABASE_DEV_URL"`
-	DATABASE_LOCAL_URL string `mapstructure:"DATABASE_LOCAL_URL"`
+	DATABASE_DEV_URL  string `mapstructure:"DATABASE_DEV_URL"`
+	DATABASE_PROD_URL string `mapstructure:"DATABASE_PROD_URL"`
 }
 
 // LoadConfig loads configuration from environment variables or a file
@@ -41,10 +41,10 @@ func GetDatabaseConfig(env string) DatabaseConfig {
 	}
 	// Determine the DSN based on the environment
 	switch env {
-	case "development":
+	case "dev":
 		dsn = cfg.DATABASE_DEV_URL
-	case "local":
-		dsn = cfg.DATABASE_LOCAL_URL
+	case "prod":
+		dsn = cfg.DATABASE_PROD_URL
 	default:
 		log.Fatalf("Unknown environment: %s", env)
 	}

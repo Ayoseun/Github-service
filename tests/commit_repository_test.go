@@ -3,14 +3,12 @@ package repository_test
 import (
 	"github-service/internal/database/repository"
 	"github-service/internal/domain/models"
-
-	"strconv"
-	"testing"
-	"time"
-
 	"github.com/stretchr/testify/assert"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+	"strconv"
+	"testing"
+	"time"
 )
 
 func cSetupTestDB() *gorm.DB {

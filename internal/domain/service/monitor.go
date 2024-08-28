@@ -1,34 +1,51 @@
 package service
 
 import (
+	"fmt"
+	"time" // Importing the time package from the standard library
+
 	"gorm.io/gorm" // Importing the GORM (Object-Relational Mapping) library for database interactions
-	"time"         // Importing the time package from the standard library
 )
 
 // StartDataFetchingTask starts a background task to periodically fetch and store repository data
+// It takes in a GORM database instance and the name of the repository to fetch data from
 func StartDataFetchingTask(db *gorm.DB, repositoryName string) {
-	fetchTicker := time.NewTicker(1 * time.Hour) // Set the fetch interval to 1 minute
-	defer fetchTicker.Stop()                     // Stop the ticker when the function returns
+	// Create a new ticker that triggers every hour
+	fetchTicker := time.NewTicker(5 * time.Second)
+	defer fetchTicker.Stop() // Ensure the ticker is stopped when the function exits
 
-	var lastFetchedCommitDate time.Time // Initialize the last fetched commit date
+	var lastFetchedCommitDate time.Time // Variable to store the date of the last fetched commit
 
-	for range fetchTicker.C { // Run the fetch and store loop on the ticker interval
+	// Start an infinite loop that runs every time the ticker ticks (every hour)
+	for range fetchTicker.C {
+		// Call the fetchAndStoreData function to fetch new data and store it in the database
 		fetchAndStoreData(db, repositoryName, &lastFetchedCommitDate)
 	}
 }
 
+// SeedDB seeds the database with initial data by fetching repository commits
+// It takes in a GORM database instance, the repository name, and the date from which to begin fetching commits
+func SeedDB(db *gorm.DB, repositoryName string, beginFetchCommitDate time.Time) {
+	// Call the fetchAndStoreData function to fetch and store data, starting from the specified date
+	fetchAndStoreData(db, repositoryName, &beginFetchCommitDate)
+}
+
 // fetchAndStoreData fetches the repository data and stores it in the database
+// It takes in a GORM database instance, the repository name, and a pointer to the last fetched commit date
 func fetchAndStoreData(db *gorm.DB, repositoryName string, lastFetchedCommitDate *time.Time) {
-	// Fetch and store repository data
+	// Fetch repository data using the RepositoryService function and store it in the database
 	RepositoryService(repositoryName, db)
-	// Fetch repository commits
+
+	// Fetch new commits from the repository, starting from the last fetched commit date
 	newCommits, err := CommitsService(repositoryName, db, *lastFetchedCommitDate)
 	if err != nil {
-		panic("Let it panic in this test scenario, because something is definitely wrong")
-	}
-	if len(newCommits) > 0 {
-		// Update the last fetched commit date to the date of the most recent commit
-		*lastFetchedCommitDate = newCommits[len(newCommits)-1].Commit.Author.Date
+		// Log an error message if there's an issue connecting to the database
+		fmt.Errorf("failed to connect to database: %v", err)
 	}
 
+	// If there are new commits, update the last fetched commit date
+	if len(newCommits) > 0 {
+		// Set the last fetched commit date to the date of the most recent commit
+		*lastFetchedCommitDate = newCommits[len(newCommits)-1].Commit.Author.Date
+	}
 }

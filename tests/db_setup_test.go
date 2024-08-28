@@ -1,8 +1,7 @@
 package repository_test
 
 import (
-	"github-service/internal/models"
-
+	"github-service/internal/domain/models"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
