@@ -8,13 +8,13 @@ import (
 	"github-service/pkg/github"
 )
 
-// CommitService provides operations for managing commits
+// RepositoryService provides operations for managing repository and cfg injection
 type RepositoryService struct {
 	repositoryRepository domain.RepositoryRepository
 	cfg                  config.Config
 }
 
-// NewCommitService creates a new instance of CommitService
+// NewRepositoryService creates a new instance of RepositoryService
 func NewRepositoryService(repositoryRepository domain.RepositoryRepository, cfg config.Config) *RepositoryService {
 	return &RepositoryService{repositoryRepository: repositoryRepository, cfg: cfg}
 }
@@ -36,8 +36,9 @@ func (s *RepositoryService) FetchAndSaveRepository(owner, repo string) (*models.
 	return r, nil
 }
 
-func (s *RepositoryService) GetRepository(repositoryURL string) (models.Repository, error) {
-	data, err := s.repositoryRepository.GetRepositoryByURL(repositoryURL)
+// GetRepository gets a saved repository by the repository name
+func (s *RepositoryService) GetRepository(repositoryName string) (models.Repository, error) {
+	data, err := s.repositoryRepository.GetRepositoryByName(repositoryName)
 	return data, err
 }
 

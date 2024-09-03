@@ -6,5 +6,5 @@ import "github-service/internal/domain/models"
 type RepositoryRepository interface {
 	SaveRepository(repo *models.Repository) error
 	GetTopNCommitAuthors(page, limit int) (models.TopAuthorsCount, error)
-	GetRepositoryByURL(repositoryURL string) (models.Repository, error)
+	GetRepositoryByName(repository string) (models.Repository, error)
 }

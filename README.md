@@ -88,18 +88,20 @@ Service Endpoints:
 Retrieves the top N commit authors by commit count from the database.
 
 ```sh
-GET /top_authors/:n
+GET /repositories/:repo/top-authors
 ```
 Example URL:
 
 ```c
-http://localhost:8080/top_authors/5?page=1&limit=3
+http://localhost:8080/repositories/chromium/top-authors/5?page=1&limit=2
 ```
 - Parameters:
 
 n (required): The number of top authors to retrieve.
 page : The page number for pagination.
 limit : The number of records per page.
+
+***Note : the idea of seing N along side page and limit is to cover edge cases where here is a need for a large number for N.***
 Response:
 
 ```json
@@ -121,12 +123,12 @@ Response:
 - Retrieves the commits for the given repository from the database.
 
 ```sh
-GET /commits/:repo
+GET /repositories/:repo/commits
 ```
 - Example URL:
 
 ```sh
-http://localhost:8080/commits/chromium?page=1&limit=20
+http://localhost:8080/repositories/chromium/commits?page=1&limit=20
 
 ```
 

@@ -59,12 +59,12 @@ func (r *RepositoryImpl) GetTopNCommitAuthors(page, limit int) (models.TopAuthor
 	return authors, err
 }
 
-// GetRepositoryByURL retrieves a repository based on its URL
+// GetRepositoryByName retrieves a repository based on its URL
 // It returns the repository model and an error if the query fails
-func (r *RepositoryImpl) GetRepositoryByURL(repositoryURL string) (models.Repository, error) {
+func (r *RepositoryImpl) GetRepositoryByName(repositoryName string) (models.Repository, error) {
 
 	var repository models.Repository
-	err := r.DB.Where("name = ?", repositoryURL).First(&repository).Error
+	err := r.DB.Where("name = ?", repositoryName).First(&repository).Error
 
 	return repository, err
 }

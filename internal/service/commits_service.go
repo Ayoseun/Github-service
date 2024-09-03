@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-// CommitService provides operations for managing commits
+// CommitService provides operations for managing commits and config injection
 type CommitService struct {
 	commitRepository domain.CommitRepository
 	cfg              config.Config
