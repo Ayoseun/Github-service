@@ -19,7 +19,7 @@ This Go-based service fetches data from the GitHub public API, stores the fetche
 **Getting Started**
 
 1. Prerequisites
-- Go 1.22.6 or later: Download here
+- Go 1.22.6 or later: Download (here)[https://www.docker.com/products/docker-desktop/]
 - Docker: Ensure Docker is installed and running on your machine.
 
 2. Installation
@@ -38,6 +38,10 @@ Install Dependencies:
 go mod tidy
 ```
 3. Run the test
+
+```sh
+go test ./tests/...
+```
 
 The test covers
 - Commit test:
@@ -156,6 +160,43 @@ limit : The number of records per page.
         }
     ]
 }
+```
+
+- Retrieve a given repository metadata
+```sh
+GET /repositories/:repo/commits
+```
+
+- Example
+
+```sh
+http://localhost:8080/repositories/chromium/fetch
+```
+
+- Parameters:
+repo : The name of the repository (e.g., chromium).
+
+- Response:
+```json
+
+{
+    "ID": 120360765,
+    "CreatedAt": "0001-01-01T00:00:00Z",
+    "UpdatedAt": "0001-01-01T00:00:00Z",
+    "DeletedAt": null,
+    "name": "chromium",
+    "description": "The official GitHub mirror of the Chromium source",
+    "html_url": "https://github.com/chromium/chromium",
+    "language": "C++",
+    "forks_count": 6884,
+    "stargazers_count": 18642,
+    "open_issues_count": 93,
+    "watchers_count": 18642,
+    "subscribers_count": 562,
+    "created_at": "2018-02-05T20:55:32Z",
+    "updated_at": "2024-09-03T17:41:53Z"
+}
+
 ```
 5. Continuous Monitoring and Data Fetching
 The service is designed to continuously monitor the repository for changes and fetch new data at regular intervals (e.g., every hour). This is achieved by implementing a background task or a cron job that periodically calls the fetchRepositoryCommits and fetchRepositoryData functions.
