@@ -165,12 +165,26 @@ The solution uses a PostgreSQL database to store repository details and commit d
 
 - Models:
 
+* Commit: Represent raw commits from reposiory on github
 * SavedCommit: Represents commit data.
+* PaginatedResponse: Represents he commits response in a paginated relay
 * Repository: Represents repository metadata.
-- Functions:
+* TopAuthorsCount: Represents top N authors
 
-GetTopNCommitAuthors: Retrieves the top N commit authors.
-GetCommitsByRepository: Retrieves commits for a specific repository.
+- Functions Interface:
+Commit functions
+type CommitRepository interface {
+	SaveCommit(commit *models.SavedCommit) error
+	GetCommits(repositoryURL string, page, limit int) ([]models.SavedCommit, error)
+	GetTotalCommits(repositoryURL string) (int64, error)
+}
+
+Repository functions
+type RepositoryRepository interface {
+	SaveRepository(repo *models.Repository) error
+	GetTopNCommitAuthors(page, limit int) (models.TopAuthorsCount, error)
+	GetRepositoryByName(repository string) (models.Repository, error)
+}
 
 7. Troubleshooting
 # WARNING- The database credentials are for testing only do not use in production
