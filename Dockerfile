@@ -26,7 +26,7 @@ WORKDIR /app
 COPY --from=builder /app/main .
 
 # Create and set up the .env file
-RUN echo "DATABASE_DEV_URL=postgres://postgres:Yourp@sswoird@db:5432/github_test?sslmode=disable" > .env \
+RUN echo "DATABASE_DEV_URL=postgres://postgres:Yourp@sswoird@db:5432/github_test" > .env \
     && echo "DATABASE_PROD_URL=postgresql://github_test_user:MfZyIf6vkrVm0O4YylZi3ig3MG3TV4VF@dpg-cr2kribtq21c73fa9kk0-a.oregon-postgres.render.com/github_test" >> .env \
     && echo "BASE_URL=https://api.github.com/repos" >> .env \
     && echo "SEED_REPO_OWNER=chromium" >> .env \
