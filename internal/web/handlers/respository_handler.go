@@ -38,3 +38,25 @@ func (h *RepositoryHandler) FetchRepositoryData(c *gin.Context) {
 	// Return the fetched repository data
 	c.JSON(http.StatusOK, r)
 }
+
+// AddRepository is a Gin handler that adds a given repository Metadata
+func (h *RepositoryHandler) AddRepository(c *gin.Context) {
+	// Get the repository name from the request parameters
+	repo := c.Param("repo")
+	owner := c.Param("repo")
+	// Call the RepositoryService to fetch the repository data
+	r, err := h.repositoryService.FetchAndSaveRepository(owner, repo)
+
+	if err != nil {
+		if err.Error() == "record not found" {
+			// If the repository is not found, return a 404 Not Found error
+			c.JSON(http.StatusNotFound, gin.H{"statusCode": http.StatusNotFound, "message": "Repository not found"})
+		} else {
+			// For other errors, return a 500 Internal Server Error
+			c.JSON(http.StatusInternalServerError, gin.H{"statusCode": http.StatusInternalServerError, "message": "Server error"})
+		}
+		return
+	}
+	// Return the fetched repository data
+	c.JSON(http.StatusOK, r)
+}

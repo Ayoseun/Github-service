@@ -8,12 +8,14 @@ import (
 	"gorm.io/gorm" // Importing the GORM (Object-Relational Mapping) library for database interactions
 )
 
-// Repository is a struct that represents a repository for managing repositories and their commit authors
+// RepositoryImpl is a struct that represents a repository for managing repositories and their commit authors
+// It implements the RepositoryRepository interface
 type RepositoryImpl struct {
 	DB *gorm.DB // Holds a reference to the database connection
 }
 
-// NewRepository is a constructor function that creates a new instance of the Repository
+// NewRepository is a constructor function that creates a new instance of RepositoryImpl
+// It returns an error if the provided database connection is nil
 func NewRepository(db *gorm.DB) (domain.RepositoryRepository, error) {
 	if db == nil {
 		return nil, errors.New("database connection is nil")
@@ -22,6 +24,7 @@ func NewRepository(db *gorm.DB) (domain.RepositoryRepository, error) {
 }
 
 // SaveRepository saves a repository to the database, creating a new one if it doesn't exist, or updating an existing one
+// It checks if the repository already exists based on its name and either creates or updates it accordingly
 func (r *RepositoryImpl) SaveRepository(repository *models.Repository) error {
 	// Check if the repository already exists
 	var existingRepo models.Repository
@@ -36,11 +39,12 @@ func (r *RepositoryImpl) SaveRepository(repository *models.Repository) error {
 			return result.Error
 		}
 	}
-	// Update existing Repository date using gorm auto update
+	// Update existing repository's data using GORM's auto-update functionality
 	return r.DB.Updates(&existingRepo).Error
 }
 
 // GetTopNCommitAuthors retrieves the top N commit authors, with pagination support
+// It groups authors by name, counts their commits, and orders the results by the count in descending order
 func (r *RepositoryImpl) GetTopNCommitAuthors(page, limit int) (models.TopAuthorsCount, error) {
 	var authors models.TopAuthorsCount
 
@@ -55,7 +59,8 @@ func (r *RepositoryImpl) GetTopNCommitAuthors(page, limit int) (models.TopAuthor
 	return authors, err
 }
 
-// GetCommits retrieves a list of commits based on the repository URL, page, and limit
+// GetRepositoryByURL retrieves a repository based on its URL
+// It returns the repository model and an error if the query fails
 func (r *RepositoryImpl) GetRepositoryByURL(repositoryURL string) (models.Repository, error) {
 
 	var repository models.Repository

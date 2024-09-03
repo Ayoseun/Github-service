@@ -16,4 +16,7 @@ func SetupAPIRoutes(r *gin.Engine, commitHandler *handlers.CommitHandler, reposi
 
 	// Route to retrieve commits by repository
 	r.GET("/repositories/:repo/commits", commitHandler.GetCommits)
+
+	// Route to retrieve commits by repository
+	r.GET("/repositories/:repo/commits", repositoryHandler.AddRepository)
 }

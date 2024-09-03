@@ -39,7 +39,7 @@ func (h *CommitMonitorImpl) StartDataFetchingTask(ctx context.Context, cfg confi
 		case <-fetchTicker.C:
 			// Call the fetchAndStoreData function to fetch new data and store it in the database
 			log.Println("Fetching and storing data...")
-			if _, err := h.fetchAndStoreData(cfg, repositoryOwner, repositoryName, &lastFetchedCommitDate); err != nil {
+			if _, err := h.fetchAndStoreData(repositoryOwner, repositoryName, &lastFetchedCommitDate); err != nil {
 				log.Printf("Error fetching and storing data: %v", err)
 			} else {
 				log.Println("Data successfully fetched and stored.")
@@ -49,22 +49,22 @@ func (h *CommitMonitorImpl) StartDataFetchingTask(ctx context.Context, cfg confi
 }
 
 // SeedDB seeds the database with initial data by fetching repository commits
-func (h *CommitMonitorImpl) SeedDB(cfg config.Config, repositoryOwner, repositoryName string, beginFetchCommitDate time.Time) {
+func (h *CommitMonitorImpl) SeedDB(repositoryOwner, repositoryName string, beginFetchCommitDate time.Time) {
 	// Call the fetchAndStoreData function to fetch and store data, starting from the specified date
-	h.fetchAndStoreData(cfg, repositoryOwner, repositoryName, &beginFetchCommitDate)
+	h.fetchAndStoreData(repositoryOwner, repositoryName, &beginFetchCommitDate)
 }
 
 // fetchAndStoreData fetches the repository data and stores it in the database
-func (h *CommitMonitorImpl) fetchAndStoreData(cfg config.Config, repositoryOwner, repositoryName string, lastFetchedCommitDate *time.Time) (any, error) {
+func (h *CommitMonitorImpl) fetchAndStoreData(repositoryOwner, repositoryName string, lastFetchedCommitDate *time.Time) (any, error) {
 	// Fetch repository data using the RepositoryService and store it in the database
-	_, err := h.repositoryService.FetchAndSaveRepository(repositoryOwner, repositoryName, cfg)
+	_, err := h.repositoryService.FetchAndSaveRepository(repositoryOwner, repositoryName)
 	if err != nil {
 		log.Printf("Failed to fetch repository data for %s/%s: %v", repositoryOwner, repositoryName, err)
 		return nil, err
 	}
 
 	// Fetch new commits from the repository, starting from the last fetched commit date
-	newCommits, err := h.commitService.FetchAndSaveCommits(repositoryOwner, repositoryName, *lastFetchedCommitDate, cfg)
+	newCommits, err := h.commitService.FetchAndSaveCommits(repositoryOwner, repositoryName, *lastFetchedCommitDate)
 	if err != nil {
 		log.Printf("Failed to fetch commits for %s/%s: %v", repositoryOwner, repositoryName, err)
 		return nil, err

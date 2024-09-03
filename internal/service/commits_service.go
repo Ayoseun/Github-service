@@ -11,16 +11,17 @@ import (
 // CommitService provides operations for managing commits
 type CommitService struct {
 	commitRepository domain.CommitRepository
+	cfg              config.Config
 }
 
 // NewCommitService creates a new instance of CommitService
-func NewCommitService(commitRepository domain.CommitRepository) *CommitService {
-	return &CommitService{commitRepository: commitRepository}
+func NewCommitService(commitRepository domain.CommitRepository, cfg config.Config) *CommitService {
+	return &CommitService{commitRepository: commitRepository, cfg: cfg}
 }
 
 // FetchAndSaveCommits fetches commits from GitHub and saves them to the database
-func (s *CommitService) FetchAndSaveCommits(owner, repo string, lastFetchedCommitDate time.Time, cfg config.Config) ([]models.Commit, error) {
-	commits, err := github.FetchRepositoryCommits(owner, repo, cfg)
+func (s *CommitService) FetchAndSaveCommits(owner, repo string, lastFetchedCommitDate time.Time) ([]models.Commit, error) {
+	commits, err := github.FetchRepositoryCommits(owner, repo, s.cfg)
 	if err != nil {
 		return nil, err
 	}

@@ -11,18 +11,19 @@ import (
 // CommitService provides operations for managing commits
 type RepositoryService struct {
 	repositoryRepository domain.RepositoryRepository
+	cfg                  config.Config
 }
 
 // NewCommitService creates a new instance of CommitService
-func NewRepositoryService(repositoryRepository domain.RepositoryRepository) *RepositoryService {
-	return &RepositoryService{repositoryRepository: repositoryRepository}
+func NewRepositoryService(repositoryRepository domain.RepositoryRepository, cfg config.Config) *RepositoryService {
+	return &RepositoryService{repositoryRepository: repositoryRepository, cfg: cfg}
 }
 
 // RepositoryService fetches the repository data from GitHub and saves it to the database
-func (s *RepositoryService) FetchAndSaveRepository(owner, repo string, cfg config.Config) (*models.Repository, error) {
+func (s *RepositoryService) FetchAndSaveRepository(owner, repo string) (*models.Repository, error) {
 
 	// Fetch the repository data from GitHub
-	r, err := github.FetchRepositoryMetaData(owner, repo, cfg)
+	r, err := github.FetchRepositoryMetaData(owner, repo, s.cfg)
 	if err != nil {
 		// Handle the error, e.g., log it or return the error
 		return nil, err

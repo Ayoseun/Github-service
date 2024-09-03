@@ -1,17 +1,26 @@
-version: '3.8'
 
 services:
-  postgres:
-    image: postgres:latest
-    container_name: my_postgres
-    environment:
-      POSTGRES_USER: ayoseun
-      POSTGRES_PASSWORD: Jared15
-      POSTGRES_DB: github
+  app:
+    build: .
     ports:
-      - "5433:5432"  # Map port 5432 in the container to port 5433 on the host
+      - "8080:8080"
+    environment:
+      - DATABASE_DEV_URL=postgres://postgres:password@db:5432/github_test?sslmode=disable
+      - DATABASE_PROD_URL=postgresql://github_test_user:MfZyIf6vkrVm0O4YylZi3ig3MG3TV4VF@dpg-cr2kribtq21c73fa9kk0-a.oregon-postgres.render.com/github_test
+      - BASE_URL=https://api.github.com/repos
+    depends_on:
+      - db
+
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: github_test
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
 
 volumes:
   postgres_data:
