@@ -77,18 +77,17 @@ GET /top_authors/:n
 ```
 Example URL:
 
-shell
-Copy code
+```c
 http://localhost:8080/top_authors/5?page=1&limit=3
-Parameters:
+```
+- Parameters:
 
 n (required): The number of top authors to retrieve.
 page : The page number for pagination.
 limit : The number of records per page.
 Response:
 
-json
-Copy code
+```json
 [
     {
         "author": "chromium-autoroll",
@@ -103,25 +102,27 @@ Copy code
         "count": 2
     }
 ]
-Retrieves the commits for the given repository from the database.
+```
+- Retrieves the commits for the given repository from the database.
 
-shell
-Copy code
+```sh
 GET /commits/:repo
-Example URL:
+```
+- Example URL:
 
-shell
-Copy code
+```sh
 http://localhost:8080/commits/chromium?page=1&limit=20
-Parameters:
+
+```
+
+- Parameters:
 
 repo : The name of the repository (e.g., chromium).
 page : The page number for pagination.
 limit : The number of records per page.
-Response:
+- Response:
 
-json
-Copy code
+```json
 {
     "current_page": 1,
     "total_pages": 2,
@@ -138,23 +139,27 @@ Copy code
         }
     ]
 }
+```
 5. Continuous Monitoring and Data Fetching
 The service is designed to continuously monitor the repository for changes and fetch new data at regular intervals (e.g., every hour). This is achieved by implementing a background task or a cron job that periodically calls the fetchRepositoryCommits and fetchRepositoryData functions.
 
 6. Data Storage and Querying
 The solution uses a PostgreSQL database to store repository details and commit data. The database schema is designed for efficient querying.
 
-Models:
+- Models:
 
-SavedCommit: Represents commit data.
-Repository: Represents repository metadata.
-Functions:
+* SavedCommit: Represents commit data.
+* Repository: Represents repository metadata.
+- Functions:
 
 GetTopNCommitAuthors: Retrieves the top N commit authors.
 GetCommitsByRepository: Retrieves commits for a specific repository.
+
 7. Troubleshooting
-Common Issues:
+# WARNING- The database credentials are for testing only do not use in production
+- Common Issues:
 
 Error: Database connection failed:
 Ensure your .env file is correctly configured with the right database URL.
 Verify that your PostgreSQL service is running.
+
