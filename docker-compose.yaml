@@ -1,19 +1,5 @@
 
 services:
-  app:
-    build: .
-    ports:
-      - "8080:8080"
-    environment:
-      - DATABASE_DEV_URL=postgres://postgres:Yourp@sswoird@db:5432/github_test?sslmode=disable
-      - DATABASE_PROD_URL=postgresql://github_test_user:MfZyIf6vkrVm0O4YylZi3ig3MG3TV4VF@dpg-cr2kribtq21c73fa9kk0-a.oregon-postgres.render.com/github_test
-      - BASE_URL=https://api.github.com/repos
-      - SEED_REPO_OWNER=chromium
-      - SEED_REPO_NAME=chromium
-      - BEGIN_FETCH_DATE=2022-12-09T00:00:00Z
-    depends_on:
-      - db
-
   db:
     image: postgres:15
     environment:
@@ -24,6 +10,15 @@ services:
       - postgres_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
+
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    depends_on:
+      - db
 
 volumes:
   postgres_data:
