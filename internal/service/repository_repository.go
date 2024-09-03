@@ -47,7 +47,6 @@ func (s *RepositoryService) GetTopNCommitAuthors(n int, page int, limit int) (mo
 		// Adjust limit to fetch only the remaining authors needed to reach `n`
 		limit = n - (page-1)*limit
 	}
-
 	// Fetch the authors using pagination
 	authors, err := s.repositoryRepository.GetTopNCommitAuthors(page, limit)
 	return authors, err

@@ -51,7 +51,7 @@ func (r *RepositoryImpl) GetTopNCommitAuthors(page, limit int) (models.TopAuthor
 	err := r.DB.Model(&models.SavedCommit{}).
 		Select("author, count(author) as count").
 		Group("author").
-		Order("count desc").
+		Order("count DESC, author ASC"). // Order by count descending, then by author name ascending
 		Limit(limit).
 		Offset((page - 1) * limit).
 		Scan(&authors).Error

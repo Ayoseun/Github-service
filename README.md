@@ -17,9 +17,11 @@ This Go-based service fetches data from the GitHub public API, stores the fetche
 5. Allow configuring the date to start pulling commits from.
 6. Provide a mechanism to reset the data collection to start from a specific point in time.
 **Getting Started**
+
 1. Prerequisites
 - Go 1.22.6 or later: Download here
 - Docker: Ensure Docker is installed and running on your machine.
+
 2. Installation
 Clone the Repository:
 
@@ -35,6 +37,18 @@ Install Dependencies:
 ```sh
 go mod tidy
 ```
+3. Run the test
+
+The test covers
+- Commit test:
+   - validates case for saving a single comit
+   - validates case for saving a multiple comit
+
+- GetTopNCommitAuthors test:
+  - It tests different pagination scenarios (first page, second page, and all authors on a single page).
+  - It ensures that the pagination works correctly by checking the authors on different pages.
+  - It checks that the correct number of authors is returned for each page.
+
 3. Docker Setup
 - Build and Run Docker Containers:
 
@@ -67,7 +81,8 @@ Start the App: The app will start automatically when running make up. However, y
 ```sh
 go run cmd/main.go
 ```
-note that this will require you to already have a running postgres server
+***note that this will require you to already have a running postgres server***
+
 Service Endpoints:
 
 Retrieves the top N commit authors by commit count from the database.
