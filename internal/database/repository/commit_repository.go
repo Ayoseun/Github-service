@@ -1,49 +1,48 @@
 package repository
 
 import (
-	"fmt"                                   // Standard library package for formatting and printing
-	"github-service/internal/domain/models" // Importing the models package from the project's internal directory
-	"gorm.io/gorm"                          // Importing the GORM (Object-Relational Mapping) library for database interactions
+	"errors"
+	"github-service/internal/domain"
+	"github-service/internal/domain/models"
+
+	"gorm.io/gorm"
 )
 
-// CommitRepository is a struct that represents a repository for managing commits
-type CommitRepository struct {
-	DB *gorm.DB // Holds a reference to the database connection
+// CommitRepositoryImpl implements the CommitRepository interface using GORM
+type CommitRepositoryImpl struct {
+	DB *gorm.DB
 }
 
-// NewCommitRepository is a constructor function that creates a new instance of the CommitRepository
-func NewCommitRepository(db *gorm.DB) *CommitRepository {
-	return &CommitRepository{
-		DB: db, // Initializing the DB field with the provided GORM database instance
+// NewCommitRepository creates a new instance of CommitRepositoryImpl
+func NewCommitRepository(db *gorm.DB) (domain.CommitRepository, error) {
+
+	if db == nil {
+		return nil, errors.New("database connection is nil")
 	}
+	return &CommitRepositoryImpl{DB: db}, nil
 }
 
-// SaveCommits saves a commit to the database
-func (r *CommitRepository) SaveCommits(commit *models.SavedCommit) error {
-	return r.DB.Create(commit).Error // Using the GORM Create method to save the commit to the database
+// SaveCommit saves a commit to the database
+func (r *CommitRepositoryImpl) SaveCommit(commit *models.SavedCommit) error {
+
+	return r.DB.Create(commit).Error
 }
 
-// GetCommits retrieves a list of commits based on the provided repository URL, page, and limit
-func (r *CommitRepository) GetCommits(repositoryURL string, page, limit int) ([]models.SavedCommit, error) {
-	var commits []models.SavedCommit // Initializing a slice to hold the retrieved commits
-
-	// Using the GORM Where, Limit, and Offset methods to filter and paginate the commits
-	err := r.DB.Where("url LIKE ?", fmt.Sprintf("%%%s%%", repositoryURL)).
+// GetCommits retrieves a list of commits based on the repository name, page, and limit
+func (r *CommitRepositoryImpl) GetCommits(repository string, page, limit int) ([]models.SavedCommit, error) {
+	var commits []models.SavedCommit
+	err := r.DB.Where("repository = ?", repository).
 		Limit(limit).
 		Offset((page - 1) * limit).
 		Find(&commits).Error
-
 	return commits, err
 }
 
-// GetTotalCommits retrieves the total number of commits for the provided repository URL
-func (r *CommitRepository) GetTotalCommits(repositoryURL string) (int64, error) {
-	var totalCommits int64 // Initializing a variable to hold the total number of commits
-
-	// Using the GORM Where and Count methods to retrieve the total number of commits
-	err := r.DB.Where("url LIKE ?", fmt.Sprintf("%%%s%%", repositoryURL)).
+// GetTotalCommits retrieves the total number of commits for the provided repository name
+func (r *CommitRepositoryImpl) GetTotalCommits(repository string) (int64, error) {
+	var totalCommits int64
+	err := r.DB.Where("repository = ?", repository).
 		Model(&models.SavedCommit{}).
 		Count(&totalCommits).Error
-
 	return totalCommits, err
 }

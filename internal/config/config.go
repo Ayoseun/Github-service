@@ -13,8 +13,10 @@ type DatabaseConfig struct {
 
 // Config struct holds the application configuration
 type Config struct {
-	DATABASE_DEV_URL  string `mapstructure:"DATABASE_DEV_URL"`
-	DATABASE_PROD_URL string `mapstructure:"DATABASE_PROD_URL"`
+	DATABASE_DEV_URL  string `json:"DATABASE_DEV_URL"`
+	DATABASE_PROD_URL string `json:"DATABASE_PROD_URL"`
+	BASE_URL          string `json:"BASE_URL"`
+	GITHUB_TOKEN      string `json:"GITHUB_TOKEN"`
 }
 
 // LoadConfig loads configuration from environment variables or a file
@@ -33,12 +35,9 @@ func LoadConfig() (config Config, err error) {
 }
 
 // GetDatabaseConfig returns the database configuration based on the environment
-func GetDatabaseConfig(env string) DatabaseConfig {
+func GetDatabaseConfig(cfg Config, env string) DatabaseConfig {
 	var dsn string
-	cfg, err := LoadConfig()
-	if err != nil {
-		log.Fatalf("Failed to load config: %v", err)
-	}
+
 	// Determine the DSN based on the environment
 	switch env {
 	case "dev":

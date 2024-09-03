@@ -48,10 +48,11 @@ type Commit struct {
 
 type SavedCommit struct {
 	gorm.Model
-	Message string    `json:"message"`
-	Author  string    `json:"author"`
-	Date    time.Time `json:"date"`
-	URL     string    `json:"url"`
+	Message    string    `json:"message"`
+	Author     string    `json:"author"`
+	Date       time.Time `json:"date"`
+	URL        string    `json:"url"`
+	Repository string    `json:"repository"`
 }
 
 // PaginatedResponse is the response structure for paginated commit data

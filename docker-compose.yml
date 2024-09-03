@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:latest
+    container_name: my_postgres
+    environment:
+      POSTGRES_USER: ayoseun
+      POSTGRES_PASSWORD: Jared15
+      POSTGRES_DB: github
+    ports:
+      - "5433:5432"  # Map port 5432 in the container to port 5433 on the host
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

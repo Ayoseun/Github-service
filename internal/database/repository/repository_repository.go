@@ -1,25 +1,28 @@
 package repository
 
 import (
+	"errors"
+	"github-service/internal/domain"
 	"github-service/internal/domain/models" // Importing the models package from the project's internal directory
 
 	"gorm.io/gorm" // Importing the GORM (Object-Relational Mapping) library for database interactions
 )
 
 // Repository is a struct that represents a repository for managing repositories and their commit authors
-type Repository struct {
+type RepositoryImpl struct {
 	DB *gorm.DB // Holds a reference to the database connection
 }
 
 // NewRepository is a constructor function that creates a new instance of the Repository
-func NewRepository(db *gorm.DB) *Repository {
-	return &Repository{
-		DB: db, // Initializing the DB field with the provided GORM database instance
+func NewRepository(db *gorm.DB) (domain.RepositoryRepository, error) {
+	if db == nil {
+		return nil, errors.New("database connection is nil")
 	}
+	return &RepositoryImpl{DB: db}, nil
 }
 
 // SaveRepository saves a repository to the database, creating a new one if it doesn't exist, or updating an existing one
-func (r *Repository) SaveRepository(repository *models.Repository) error {
+func (r *RepositoryImpl) SaveRepository(repository *models.Repository) error {
 	// Check if the repository already exists
 	var existingRepo models.Repository
 	result := r.DB.Where("name = ?", repository.Name).First(&existingRepo)
@@ -33,30 +36,13 @@ func (r *Repository) SaveRepository(repository *models.Repository) error {
 			return result.Error
 		}
 	}
-
-	// Repository exists, update it
-	existingRepo.Description = repository.Description
-	existingRepo.URL = repository.URL
-	existingRepo.Language = repository.Language
-	existingRepo.ForksCount = repository.ForksCount
-	existingRepo.StarsCount = repository.StarsCount
-	existingRepo.OpenIssues = repository.OpenIssues
-	existingRepo.Watchers = repository.Watchers
-	existingRepo.CreatedAt = repository.CreatedAt
-	existingRepo.UpdatedAt = repository.UpdatedAt
-	existingRepo.SubscribersCount = repository.SubscribersCount
-	return r.DB.Save(&existingRepo).Error
+	// Update existing Repository date using gorm auto update
+	return r.DB.Updates(&existingRepo).Error
 }
 
 // GetTopNCommitAuthors retrieves the top N commit authors, with pagination support
-func (r *Repository) GetTopNCommitAuthors(n, page, limit int) ([]struct {
-	Author string `json:"author"`
-	Count  int    `json:"count"`
-}, error) {
-	var authors []struct {
-		Author string `json:"author"`
-		Count  int    `json:"count"`
-	}
+func (r *RepositoryImpl) GetTopNCommitAuthors(page, limit int) (models.TopAuthorsCount, error) {
+	var authors models.TopAuthorsCount
 
 	err := r.DB.Model(&models.SavedCommit{}).
 		Select("author, count(author) as count").
@@ -65,5 +51,15 @@ func (r *Repository) GetTopNCommitAuthors(n, page, limit int) ([]struct {
 		Limit(limit).
 		Offset((page - 1) * limit).
 		Scan(&authors).Error
+
 	return authors, err
+}
+
+// GetCommits retrieves a list of commits based on the repository URL, page, and limit
+func (r *RepositoryImpl) GetRepositoryByURL(repositoryURL string) (models.Repository, error) {
+
+	var repository models.Repository
+	err := r.DB.Where("name = ?", repositoryURL).First(&repository).Error
+
+	return repository, err
 }

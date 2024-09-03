@@ -1,25 +1,40 @@
 package handlers
 
 import (
-	"github-service/internal/domain/service"
-	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
+	"github-service/internal/service"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
+type RepositoryHandler struct {
+	repositoryService *service.RepositoryService
+}
+
+func NewRepositoryHandler(repositoryService *service.RepositoryService) *RepositoryHandler {
+	return &RepositoryHandler{
+
+		repositoryService: repositoryService,
+	}
+}
+
 // FetchRepositoryData is a Gin handler that fetches data for a given repository
-func FetchRepositoryData(c *gin.Context, db *gorm.DB) {
+func (h *RepositoryHandler) FetchRepositoryData(c *gin.Context) {
 	// Get the repository name from the request parameters
 	repo := c.Param("repo")
-
 	// Call the RepositoryService to fetch the repository data
-	r, err := service.RepositoryService(repo, db)
+	r, err := h.repositoryService.GetRepository(repo)
+
 	if err != nil {
-		// If there's an error fetching the repository data, return a 500 error
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch repository data"})
+		if err.Error() == "record not found" {
+			// If the repository is not found, return a 404 Not Found error
+			c.JSON(http.StatusNotFound, gin.H{"statusCode": http.StatusNotFound, "message": "Repository not found"})
+		} else {
+			// For other errors, return a 500 Internal Server Error
+			c.JSON(http.StatusInternalServerError, gin.H{"statusCode": http.StatusInternalServerError, "message": "Server error"})
+		}
 		return
 	}
-
 	// Return the fetched repository data
 	c.JSON(http.StatusOK, r)
 }

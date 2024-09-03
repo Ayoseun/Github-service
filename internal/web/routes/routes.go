@@ -1,32 +1,19 @@
 package routes
 
 import (
-	// Importing the handlers package from the project's internal directory
 	"github-service/internal/web/handlers"
 
-	"github.com/gin-gonic/gin" // Importing the Gin web framework
-	"gorm.io/gorm"             // Importing the GORM (Object-Relational Mapping) library for database interactions
+	"github.com/gin-gonic/gin"
 )
 
-// APPRoutes sets up the API routes for the application
-func APPRoutes(r *gin.Engine, db *gorm.DB) {
-	// Uncomment the following block if you want to set up a route to fetch repository commits
-	// r.GET("/:repo/fetch_commits", func(c *gin.Context) {
-	// 	handlers.FetchRepositoryCommits(c, db)
-	// })
+// SetupAPIRoutes sets up the API routes for the application
+func SetupAPIRoutes(r *gin.Engine, commitHandler *handlers.CommitHandler, repositoryHandler *handlers.RepositoryHandler) {
+	// Route to fetch repository data
+	r.GET("/repositories/:repo/fetch", repositoryHandler.FetchRepositoryData)
 
-	// Set up a route to fetch repository data
-	r.GET("/fetch_repository/:repo", func(c *gin.Context) {
-		handlers.FetchRepositoryData(c, db)
-	})
+	// Route to get the top N commit authors
+	r.GET("/repositories/:repo/top-authors/:n", commitHandler.GetTopNCommitAuthors)
 
-	// Set up a route to get the top N commit authors
-	r.GET("/top_authors/:n", func(c *gin.Context) {
-		handlers.GetTopNCommitAuthors(c, db)
-	})
-
-	// Set up a route to retrieve commits by repository
-	r.GET("/commits/:repo", func(c *gin.Context) {
-		handlers.RetrieveCommitsByRepository(c, db)
-	})
+	// Route to retrieve commits by repository
+	r.GET("/repositories/:repo/commits", commitHandler.GetCommits)
 }

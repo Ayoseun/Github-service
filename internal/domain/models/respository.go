@@ -12,7 +12,11 @@ type Repository struct {
 	StarsCount       int    `json:"stargazers_count"`
 	OpenIssues       int    `json:"open_issues_count"`
 	Watchers         int    `json:"watchers_count"`
-	CreatedAt        string `json:"created_at"`
 	SubscribersCount int    `json:"subscribers_count"`
+	CreatedAt        string `json:"created_at"`
 	UpdatedAt        string `json:"updated_at"`
+}
+type TopAuthorsCount []struct {
+	Author string `json:"author"`
+	Count  int    `json:"count"`
 }

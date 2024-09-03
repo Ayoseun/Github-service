@@ -3,23 +3,40 @@ package github
 import (
 	"encoding/json"
 	"fmt"
+	"github-service/internal/config"
 	"github-service/internal/domain/models"
 	"io"
 	"net/http"
 )
 
-func FetchRepositoryCommits(repo string) ([]models.Commit, error) {
-	url := fmt.Sprintf("https://api.github.com/repos/chromium/%s/commits", repo)
-	resp, err := http.Get(url)
+func FetchRepositoryCommits(owner, repo string, cfg config.Config) ([]models.Commit, error) {
+	url := fmt.Sprintf("%s/%s/%s/commits", cfg.BASE_URL, owner, repo)
+
+	// Create a new HTTP request
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	// Add the API key to the Authorization header only if it is provided
+	if cfg.GITHUB_TOKEN != "" {
+		req.Header.Set("Authorization", fmt.Sprintf("token %s", cfg.GITHUB_TOKEN))
+	}
+
+	// Perform the HTTP request
+	client := &http.Client{}
+	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
 	}
 	defer resp.Body.Close()
 
+	// Check the status code
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("failed to fetch external data")
+		return nil, fmt.Errorf("failed to fetch external data: %s", resp.Status)
 	}
 
+	// Read and unmarshal the response body
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
@@ -30,21 +47,37 @@ func FetchRepositoryCommits(repo string) ([]models.Commit, error) {
 		return nil, err
 	}
 
-	return commits, nil
+	return commits, err
 }
 
-func FetchRepositoryData(repo string) (*models.Repository, error) {
-	url := fmt.Sprintf("https://api.github.com/repos/chromium/%s", repo)
-	resp, err := http.Get(url)
+func FetchRepositoryMetaData(owner, repo string, cfg config.Config) (*models.Repository, error) {
+	url := fmt.Sprintf("%s/%s/%s", cfg.BASE_URL, owner, repo)
+
+	// Create a new HTTP request
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	// Add the API key to the Authorization header only if it is provided
+	if cfg.GITHUB_TOKEN != "" {
+		req.Header.Set("Authorization", fmt.Sprintf("token %s", cfg.GITHUB_TOKEN))
+	}
+
+	// Perform the HTTP request
+	client := &http.Client{}
+	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
 	}
 	defer resp.Body.Close()
 
+	// Check the status code
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("failed to fetch repository data")
+		return nil, fmt.Errorf("failed to fetch external data: %s", resp.Status)
 	}
 
+	// Read and unmarshal the response body
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
@@ -56,5 +89,5 @@ func FetchRepositoryData(repo string) (*models.Repository, error) {
 		return nil, err
 	}
 
-	return &r, nil
+	return &r, err
 }
