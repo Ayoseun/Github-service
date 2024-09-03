@@ -16,81 +16,79 @@ This Go-based service fetches data from the GitHub public API, stores the fetche
 4. Avoid pulling the same commit twice and ensure the database mirrors the commits on GitHub.
 5. Allow configuring the date to start pulling commits from.
 6. Provide a mechanism to reset the data collection to start from a specific point in time.
-## Getting Started
+**Getting Started**
 1. Prerequisites
 - Go 1.22.6 or later: Download here
-- PostgreSQL: Make sure PostgreSQL is installed and running on your machine.
-1a. Setting Up PostgreSQL on macOS
-- Install PostgreSQL:
-```shell
-brew install postgresql
-```
--  Start the PostgreSQL service:
-```shell
-brew services start postgresql
-```
--  Access PostgreSQL:
-```shell
-psql postgres
-```
--  Create the database:
-```shell
-CREATE DATABASE github;
-```
+- Docker: Ensure Docker is installed and running on your machine.
 2. Installation
-- Clone the Repository:
-```shell
+Clone the Repository:
+
+```sh
 git clone https://github.com/Ayoseun/Github-service.git
 ```
-- Navigate to the Project Directory:
-```shell
+Navigate to the Project Directory:
+
+```sh
 cd github-service
 ```
-- Install Dependencies:
-```shell
+Install Dependencies:
+```sh
 go mod tidy
 ```
-- Set Up Environment Variables:
-Create a `.env` file in the project root directory:
-```shell
-touch .env
-```
-Next add your database connection URLs:
-```shell
-DATABASE_DEV_URL=postgres://username:password@localhost:5432/github
-DATABASE_PROD_URL=<Your-Cloud-POstgres-URL>
-```
-Ensure the connection string format matches your database configuration.
+3. Docker Setup
+- Build and Run Docker Containers:
 
-3. Testing
-The project includes test cases to verify functionality.
+```sh
+make up
+```
+- Stop the Running Containers:
 
-Run Tests:
-```shell
-go test ./tests/...
+```sh
+make down
+```
+- Restart Docker Containers:
+
+```sh
+make restart
+```
+- Clean Up Containers and Volumes:
+
+```sh
+make clean
+```
+- Tail Logs from the App Service:
+
+```sh
+make logs
 ```
 4. Usage
+Start the App: The app will start automatically when running make up. However, you can also start it manually by running the below command in the app directory:
 
-- Start the app by running the below command in the app directory in your terminal or command line interface :
-```go
+```sh
 go run cmd/main.go
 ```
-- The service provides the following endpoints:
+note that this will require you to already have a running postgres server
+Service Endpoints:
 
-**Retrieves the top N commit authors by commit count from the database.**
-```shell
+Retrieves the top N commit authors by commit count from the database.
+
+```sh
 GET /top_authors/:n
 ```
-Example url
-```shell
+Example URL:
+
+shell
+Copy code
 http://localhost:8080/top_authors/5?page=1&limit=3
-```
 Parameters:
-- n (required): The number of top authors to retrieve.
-- page : The page number for pagination.
-- limit : The number of records per page.
+
+n (required): The number of top authors to retrieve.
+page : The page number for pagination.
+limit : The number of records per page.
 Response:
-```json
+
+json
+Copy code
 [
     {
         "author": "chromium-autoroll",
@@ -105,21 +103,25 @@ Response:
         "count": 2
     }
 ]
-```
-**Retrieves the commits for the given repository from the database.**
-```shell
+Retrieves the commits for the given repository from the database.
+
+shell
+Copy code
 GET /commits/:repo
-```
-Example
-```shell
+Example URL:
+
+shell
+Copy code
 http://localhost:8080/commits/chromium?page=1&limit=20
-```
 Parameters:
-- repo : The name of the repository (e.g., chromium).
-- page : The page number for pagination.
-- limit : The number of records per page.
+
+repo : The name of the repository (e.g., chromium).
+page : The page number for pagination.
+limit : The number of records per page.
 Response:
-```json
+
+json
+Copy code
 {
     "current_page": 1,
     "total_pages": 2,
@@ -129,35 +131,30 @@ Response:
             "CreatedAt": "2024-08-21T03:10:56.405498+01:00",
             "UpdatedAt": "2024-08-21T03:10:56.405498+01:00",
             "DeletedAt": null,
-            "message": "Add APU backend support\n\nWe want to support running models with different accelerator backends.\nThis adds the backend type parameter in ChromeMLModelDescriptor, which\nincludes the original GPU backend, and a new APU backend. This also add\nsome parameters that are used by llm_engine for other type of backends\nlike APU (e.g., model_path, sentencepiece_mode_path).\n\nBug: b:351276861\nTest: CQ\nChange-Id: I0080f3b7e37c065b1545d764312079f869e0776e\nReviewed-on: https://chromium-review.googlesource.com/c/chromium/src/+/5782475\nReviewed-by: Clark DuVall <cduvall@chromium.org>\nReviewed-by: Yi Chou <yich@google.com>\nCommit-Queue: Howard Yang <hcyang@google.com>\nCr-Commit-Position: refs/heads/main@{#1344548}",
+            "message": "Add APU backend support...",
             "author": "Howard Yang",
             "date": "2024-08-21T02:56:27+01:00",
             "url": "https://github.com/chromium/chromium/commit/cb57d73200f18b50f218b2a6117fc4266b3d5e10"
-        },
+        }
     ]
 }
-
-```
-
-Run the project postman docs [here](https://documenter.getpostman.com/view/17643992/2sA3sAhnpi)
-
 5. Continuous Monitoring and Data Fetching
 The service is designed to continuously monitor the repository for changes and fetch new data at regular intervals (e.g., every hour). This is achieved by implementing a background task or a cron job that periodically calls the fetchRepositoryCommits and fetchRepositoryData functions.
 
 6. Data Storage and Querying
 The solution uses a PostgreSQL database to store repository details and commit data. The database schema is designed for efficient querying.
 
-- Models:
+Models:
 
-`SavedCommit: Represents commit data.`
-`Repository: Represents repository metadata.`
-- Functions:
+SavedCommit: Represents commit data.
+Repository: Represents repository metadata.
+Functions:
 
-`GetTopNCommitAuthors: Retrieves the top N commit authors.`
-`GetCommitsByRepository: Retrieves commits for a specific repository.`
+GetTopNCommitAuthors: Retrieves the top N commit authors.
+GetCommitsByRepository: Retrieves commits for a specific repository.
 7. Troubleshooting
 Common Issues:
 
-Error: Database connection failed
+Error: Database connection failed:
 Ensure your .env file is correctly configured with the right database URL.
 Verify that your PostgreSQL service is running.

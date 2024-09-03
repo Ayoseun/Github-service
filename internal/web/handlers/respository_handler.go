@@ -42,8 +42,8 @@ func (h *RepositoryHandler) FetchRepositoryData(c *gin.Context) {
 // AddRepository is a Gin handler that adds a given repository Metadata
 func (h *RepositoryHandler) AddRepository(c *gin.Context) {
 	// Get the repository name from the request parameters
-	repo := c.Param("repo")
-	owner := c.Param("repo")
+	repo := c.Query("repo")
+	owner := c.Query("owner")
 	// Call the RepositoryService to fetch the repository data
 	r, err := h.repositoryService.FetchAndSaveRepository(owner, repo)
 

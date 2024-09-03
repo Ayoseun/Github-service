@@ -17,6 +17,9 @@ type Config struct {
 	DATABASE_PROD_URL string `json:"DATABASE_PROD_URL"`
 	BASE_URL          string `json:"BASE_URL"`
 	GITHUB_TOKEN      string `json:"GITHUB_TOKEN"`
+	SEED_REPO_OWNER   string `json:"SEED_REPO_OWNER"`
+	SEED_REPO_NAME    string `json:"SEED_REPO_NAME"`
+	BEGIN_FETCH_DATE  string `json:"BEGIN_FETCH_DATE"`
 }
 
 // LoadConfig loads configuration from environment variables or a file

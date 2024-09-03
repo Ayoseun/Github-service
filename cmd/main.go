@@ -8,58 +8,75 @@ import (
 	"github-service/internal/service"
 	"github-service/internal/web/handlers"
 	"github-service/internal/web/routes"
-	"time"
-
-	"log"
-
 	"github.com/gin-gonic/gin"
+	"log"
+	"time"
 )
 
 func main() {
+
 	// Create a cancellable context
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel() // Ensure cancellation when done
+
+	// Load the application configuration
 	cfg, err := config.LoadConfig()
 	if err != nil {
 		log.Fatalf("Failed to load config: %v", err)
 	}
+
 	// Initialize the database connection
-	// Connect to the database using configuration settings for the "dev" environment
 	db, err := database.Connect(config.GetDatabaseConfig(cfg, "dev"))
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
+
 	// Create a new Gin router instance
 	router := gin.Default()
 
-	// Initialize repository
+	// Initialize repository instances
 	commitRepo, err := repository.NewCommitRepository(db)
 	if err != nil {
-
-		log.Fatalf("Failed to create repository: database connection is nil%v", err)
+		log.Fatalf("Failed to create commit repository: %v", err)
 	}
-	repositoryRepository, err := repository.NewRepository(db)
+	repositoryRepo, err := repository.NewRepository(db)
 	if err != nil {
-		log.Fatalf("ailed to create repository: database connection is nil: %v", err)
+		log.Fatalf("Failed to create repository: %v", err)
 	}
-	// Initialize service
+
+	// Initialize service instances
 	commitService := service.NewCommitService(commitRepo, cfg)
-	repositoryService := service.NewRepositoryService(repositoryRepository, cfg)
+	repositoryService := service.NewRepositoryService(repositoryRepo, cfg)
+
+	// Initialize handlers
 	commitHandler := handlers.NewCommitHandler(commitService, repositoryService)
 	repositoryHandler := handlers.NewRepositoryHandler(repositoryService)
+
+	// Initialize the commit monitor service
 	commitMonitor := service.NewCommitMonitor(commitService, repositoryService)
-	// Initialize routes
+
+	// Initialize API routes
 	routes.SetupAPIRoutes(router, commitHandler, repositoryHandler)
-	// Define the initial fetch date for seeding the database
-	beginFetchDate := time.Date(2022, 12, 9, 0, 0, 0, 0, time.UTC) // Example date: December 9, 2022
+
+	// Retrieve configuration from environment variables
+	repoOwner := cfg.SEED_REPO_OWNER
+	repoName := cfg.SEED_REPO_NAME
+	beginFetchDateStr := cfg.BEGIN_FETCH_DATE
+
+	// Parse the beginFetchDate from the environment variable
+	beginFetchDate, err := time.Parse(time.RFC3339, beginFetchDateStr)
+	if err != nil {
+		log.Fatalf("Invalid BEGIN_FETCH_DATE format: %v", err)
+	}
+
 	// Seed the database with initial data starting from the defined date
-	commitMonitor.SeedDB("golang", "go", beginFetchDate)
+	commitMonitor.SeedDB(repoOwner, repoName, beginFetchDate)
 
 	// Start the background task that periodically fetches and stores repository data
-
-	go commitMonitor.StartDataFetchingTask(ctx, cfg, "golang", "go")
+	go commitMonitor.StartDataFetchingTask(ctx, repoOwner, repoName)
 
 	// Start the Gin HTTP server and listen on port 8080
-	router.Run(":8080")
-
+	if err := router.Run(":8080"); err != nil {
+		log.Fatalf("Failed to start server: %v", err)
+	}
 }

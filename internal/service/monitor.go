@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"github-service/internal/config"
 	"log"
 	"time"
 )
@@ -20,7 +19,7 @@ func NewCommitMonitor(commitService *CommitService, repositoryService *Repositor
 }
 
 // StartDataFetchingTask starts a background task to periodically fetch and store repository data
-func (h *CommitMonitorImpl) StartDataFetchingTask(ctx context.Context, cfg config.Config, repositoryOwner, repositoryName string) {
+func (h *CommitMonitorImpl) StartDataFetchingTask(ctx context.Context, repositoryOwner, repositoryName string) {
 	// Create a new ticker that triggers every 5 hours
 	fetchTicker := time.NewTicker(5 * time.Second)
 	defer fetchTicker.Stop() // Ensure the ticker is stopped when the function exits
@@ -50,6 +49,7 @@ func (h *CommitMonitorImpl) StartDataFetchingTask(ctx context.Context, cfg confi
 
 // SeedDB seeds the database with initial data by fetching repository commits
 func (h *CommitMonitorImpl) SeedDB(repositoryOwner, repositoryName string, beginFetchCommitDate time.Time) {
+
 	// Call the fetchAndStoreData function to fetch and store data, starting from the specified date
 	h.fetchAndStoreData(repositoryOwner, repositoryName, &beginFetchCommitDate)
 }

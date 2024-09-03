@@ -4,7 +4,7 @@ DOCKER_COMPOSE=docker-compose -f docker-compose.yaml
 # Build and run the Docker containers
 .PHONY: up
 up:
-	$(DOCKER_COMPOSE) up --build
+	$(DOCKER_COMPOSE) up --build -d
 
 # Stop the running containers
 .PHONY: down
