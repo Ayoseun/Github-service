@@ -19,7 +19,7 @@ This Go-based service fetches data from the GitHub public API, stores the fetche
 **Getting Started**
 
 1. Prerequisites
-- Go 1.22.6 or later: Download (here)[https://www.docker.com/products/docker-desktop/]
+- Go 1.22.6 or later: Download [here](https://www.docker.com/products/docker-desktop/)
 - Docker: Ensure Docker is installed and running on your machine.
 
 2. Installation
