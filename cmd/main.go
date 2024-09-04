@@ -10,6 +10,9 @@ import (
 	"github-service/internal/web/routes"
 	"github.com/gin-gonic/gin"
 	"log"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 )
 
@@ -31,9 +34,6 @@ func main() {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
 
-	// Create a new Gin router instance
-	router := gin.Default()
-
 	// Initialize repository instances
 	commitRepo, err := repository.NewCommitRepository(db)
 	if err != nil {
@@ -48,15 +48,8 @@ func main() {
 	commitService := service.NewCommitService(commitRepo, cfg)
 	repositoryService := service.NewRepositoryService(repositoryRepo, cfg)
 
-	// Initialize handlers
-	commitHandler := handlers.NewCommitHandler(commitService, repositoryService)
-	repositoryHandler := handlers.NewRepositoryHandler(repositoryService)
-
 	// Initialize the commit monitor service
-	commitMonitor := service.NewCommitMonitor(commitService, repositoryService)
-
-	// Initialize API routes
-	routes.SetupAPIRoutes(router, commitHandler, repositoryHandler)
+	commitMonitor := service.NewCommitMonitor(ctx, commitService, repositoryService)
 
 	// Retrieve configuration from environment variables
 	repoOwner := cfg.SEED_REPO_OWNER
@@ -70,10 +63,31 @@ func main() {
 	}
 
 	// Seed the database with initial data starting from the defined date
-	commitMonitor.SeedDB(repoOwner, repoName, beginFetchDate)
+	if _, err := commitMonitor.AddRepository(repoOwner, repoName, beginFetchDate); err != nil {
 
+		log.Printf("Failed to add initial repository: %v", err)
+
+	}
 	// Start the background task that periodically fetches and stores repository data
 	go commitMonitor.StartDataFetchingTask(ctx, repoOwner, repoName)
+
+	// Handle graceful shutdown
+	go func() {
+		// Create a channel to listen for OS signals
+		sigs := make(chan os.Signal, 1)
+		signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+
+		// Block until a signal is received
+		<-sigs
+		log.Println("Shutdown signal received, stopping the commit monitor...")
+		cancel() // Cancel the context to stop the background task
+	}()
+
+	// Initialize the Gin router and API routes
+	router := gin.Default()
+	commitHandler := handlers.NewCommitHandler(commitService, repositoryService)
+	repositoryHandler := handlers.NewRepositoryHandler(repositoryService, commitMonitor)
+	routes.SetupAPIRoutes(router, commitHandler, repositoryHandler)
 
 	// Start the Gin HTTP server and listen on port 8080
 	if err := router.Run(":8080"); err != nil {

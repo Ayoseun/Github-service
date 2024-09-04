@@ -45,6 +45,32 @@ func (s *CommitService) FetchAndSaveCommits(owner, repo string, lastFetchedCommi
 	return commits, nil
 }
 
+// FetchAndSaveCommits fetches commits from GitHub and saves them to the database
+func (s *CommitService) FetchCommitsInRange(owner, repo string, beforeCommitDate, afterCommitDate time.Time) ([]models.Commit, error) {
+	commits, err := github.FetchRepositoryCommits(owner, repo, s.cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, commit := range commits {
+		if commit.Commit.Author.Date.Before(beforeCommitDate) && commit.Commit.Author.Date.After(afterCommitDate) {
+			commitToSave := &models.SavedCommit{
+				URL:        commit.URL,
+				Message:    commit.Commit.Message,
+				Author:     commit.Commit.Author.Name,
+				Date:       commit.Commit.Author.Date,
+				Repository: repo,
+			}
+
+			if err := s.commitRepository.SaveCommit(commitToSave); err != nil {
+				return nil, err
+			}
+		}
+	}
+
+	return commits, nil
+}
+
 // GetPaginatedCommits returns paginated commits from the database
 func (s *CommitService) GetPaginatedCommits(repository string, page, limit int) ([]models.SavedCommit, error) {
 	return s.commitRepository.GetCommits(repository, page, limit)

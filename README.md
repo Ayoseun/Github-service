@@ -1,6 +1,8 @@
 # GitHub API Data Fetching and Service
 This Go-based service fetches data from the GitHub public API, stores the fetched data in a PostgreSQL database, and provides mechanisms to efficiently query the stored data.
 
+[Postman docs](https://documenter.getpostman.com/view/17643992/2sA3sAhnpi)
+
 ## Overview
 **Objectives**
 - Fetch data from the GitHub public API for a given repository, including commits and repository metadata.
@@ -87,7 +89,24 @@ go run cmd/main.go
 ```
 ***note that this will require you to already have a running postgres server***
 
-Service Endpoints:
+Ininalizing he monioring service requires a defaul value from .ENV which may include 
+begin dae, end dae,repo name and repo owner
+- Add Repository Without a Range:
+```sh
+commitMonitor.AddRepository(ctx, "owner", "repo", time.Now())
+```
+This will fetch commits starting from time.Now() and monitor the repository.
+
+- Add Repository With a Range:
+```sh
+startDate := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
+endDate := time.Date(2024, 1, 31, 23, 59, 59, 0, time.UTC)
+commitMonitor.AddRepository(ctx, "owner", "repo", time.Now(), startDate, endDate)
+
+```
+This will fetch commits between startDate and endDate and then start monitoring the repository.
+
+### Service Endpoints:
 
 Retrieves the top N commit authors by commit count from the database.
 
@@ -198,6 +217,80 @@ repo : The name of the repository (e.g., chromium).
 }
 
 ```
+Add new repository to monitor.
+
+```sh
+GET /repositories/monitor
+```
+Example URL:
+
+```c
+http://localhost:8080/repositories/monitor?owner=golang&repo=go&start_date=2023-01-01T00:00:00Z
+```
+- Query Parameters:
+
+owner (required): The owner of the repo
+repo : The repository to add.
+start_date : The defined N history to begin pulling from.
+
+- Response:
+```json
+{
+    "statusCode":200,
+    "message": "Repository added successfully"
+}
+
+```
+
+Remove a repository from monitor service.
+
+```sh
+DELETE /repositories/monitor
+```
+Example URL:
+
+```c
+http://localhost:8080/repositories/monitor?owner=chromium&repo=chromium
+```
+- Query Parameters:
+
+owner (required): The owner of the repo
+repo : The repository to add.
+
+- Response:
+```json
+{
+    "statusCode":200,
+  "message": "Repository removed successfully"
+}
+```
+
+Add new repository to monitor with defined pulling commit history.
+
+```sh
+GET /repositories/monitor
+```
+Example URL:
+
+```c
+http://localhost:8080/repositories/monitor?owner=golang&repo=go&start_date=2023-01-01T00:00:00Z&end_date=2024-01-01T00:00:00Z
+```
+- Query Parameters:
+
+owner (required): The owner of the repo
+repo : The repository to add.
+start_date : The defined N history to begin pulling from.
+end_date : The defined N history to begin pulling till.
+
+- Response:
+```json
+{
+    "statusCode":200,
+    "message": "Repository added successfully"
+}
+
+```
+
 5. Continuous Monitoring and Data Fetching
 The service is designed to continuously monitor the repository for changes and fetch new data at regular intervals (e.g., every hour). This is achieved by implementing a background task or a cron job that periodically calls the fetchRepositoryCommits and fetchRepositoryData functions.
 
@@ -225,6 +318,12 @@ type RepositoryRepository interface {
 	SaveRepository(repo *models.Repository) error
 	GetTopNCommitAuthors(page, limit int) (models.TopAuthorsCount, error)
 	GetRepositoryByName(repository string) (models.Repository, error)
+}
+
+Repository Monitoring interface
+type CommitServiceInterface interface {
+	FetchAndSaveCommits(owner, repo string, since time.Time) ([]models.Commit, error)
+	FetchCommitsInRange(owner, repo string, from, to time.Time) ([]models.Commit, error)
 }
 
 7. Troubleshooting
