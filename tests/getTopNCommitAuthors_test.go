@@ -1,11 +1,12 @@
 package repository_test
 
 import (
-	"github-service/internal/database/repository"
-	"github-service/internal/domain/models"
+	"context"
+	"github-service/internal/adapters/postgresdb"
+	"github-service/internal/core/domain"
+	"time"
 
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 	"gorm.io/driver/sqlite"
@@ -16,24 +17,24 @@ func TestGetTopNCommitAuthors(t *testing.T) {
 	// Setup in-memory SQLite database
 	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 	assert.NoError(t, err)
-
+	ctx := context.Background()
 	// Auto migrate the schema
-	err = db.AutoMigrate(&models.SavedCommit{})
+	err = db.AutoMigrate(&postgresdb.Commit{})
 	assert.NoError(t, err)
 
 	// Create repository instance
-	repo, err := repository.NewRepository(db)
+	repo, err := postgresdb.NewRepository(db)
 	assert.NoError(t, err)
 
 	// Create test commits
-	testCommits := []models.SavedCommit{
-		{Author: "Alice", Date: time.Now()},
-		{Author: "Alice", Date: time.Now()},
-		{Author: "Bob", Date: time.Now()},
-		{Author: "Charlie", Date: time.Now()},
-		{Author: "Alice", Date: time.Now()},
-		{Author: "Bob", Date: time.Now()},
-		{Author: "David", Date: time.Now()},
+	testCommits := []domain.Commit{
+		{Author: "Alice", CommitDate: time.Now(), Repository: "Hello-World"},
+		{Author: "Alice", CommitDate: time.Now(), Repository: "Hello-World"},
+		{Author: "Bob", CommitDate: time.Now(), Repository: "Hello-World"},
+		{Author: "Charlie", CommitDate: time.Now(), Repository: "Hello-World"},
+		{Author: "Alice", CommitDate: time.Now(), Repository: "Hello-World"},
+		{Author: "Bob", CommitDate: time.Now(), Repository: "Hello-World"},
+		{Author: "David", CommitDate: time.Now(), Repository: "Hello-World"},
 	}
 
 	// Save all commits
@@ -44,6 +45,7 @@ func TestGetTopNCommitAuthors(t *testing.T) {
 
 	// Test cases
 	testCases := []struct {
+		repo          string
 		name          string
 		page          int
 		limit         int
@@ -51,6 +53,7 @@ func TestGetTopNCommitAuthors(t *testing.T) {
 		expectedOrder []string
 	}{
 		{
+			repo:          "Hello-World",
 			name:          "First page, limit 2",
 			page:          1,
 			limit:         2,
@@ -58,6 +61,7 @@ func TestGetTopNCommitAuthors(t *testing.T) {
 			expectedOrder: []string{"Alice", "Bob"},
 		},
 		{
+			repo:          "Hello-World",
 			name:          "Second page, limit 2",
 			page:          2,
 			limit:         2,
@@ -65,6 +69,7 @@ func TestGetTopNCommitAuthors(t *testing.T) {
 			expectedOrder: []string{"Charlie", "David"},
 		},
 		{
+			repo:          "Hello-World",
 			name:          "All authors, single page",
 			page:          1,
 			limit:         10,
@@ -75,7 +80,7 @@ func TestGetTopNCommitAuthors(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			authors, err := repo.GetTopNCommitAuthors(tc.page, tc.limit)
+			authors, err := repo.GetTopNCommitAuthors(ctx, tc.repo, tc.page, tc.limit)
 			assert.NoError(t, err)
 			assert.Len(t, authors, tc.expectedCount)
 

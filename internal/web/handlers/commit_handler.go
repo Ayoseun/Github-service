@@ -1,9 +1,9 @@
 package handlers
 
 import (
-	"fmt"
-	"github-service/internal/domain/models"
-	"github-service/internal/service"
+	"github-service/internal/core/domain"
+	"github-service/internal/core/service"
+	"github-service/pkg/pagination"
 	"net/http"
 	"strconv"
 
@@ -26,101 +26,103 @@ func NewCommitHandler(commitService *service.CommitService, repositoryService *s
 
 // GetCommits retrieves commits for a given repository and returns them as a paginated response
 func (h *CommitHandler) GetCommits(c *gin.Context) {
-	// Get the repository name from the request parameters
 	repo := c.Param("repo")
 
-	// Parse the page and limit parameters from the query string
-	page, err := strconv.Atoi(c.Query("page"))
-	if err != nil || page < 1 {
-		page = 1
-	}
-
-	limit, err := strconv.Atoi(c.Query("limit"))
-	if err != nil || limit < 1 {
-		limit = 10
-	}
-
-	// Retrieve the repository details from the database
-	url, err := h.repositoryService.GetRepository(repo)
+	// Parse pagination parameters from the query string
+	page, limit, err := pagination.ParsePaginationParams(c)
 	if err != nil {
-		if err.Error() == "record not found" {
-			// Return 404 Not Found if the repository is not found
-			c.JSON(http.StatusNotFound, gin.H{"statusCode": http.StatusNotFound, "message": "Repository not found"})
-		} else {
-			// Return 500 Internal Server Error for other errors
-			c.JSON(http.StatusInternalServerError, gin.H{"statusCode": http.StatusInternalServerError, "message": "Server error"})
-		}
+		pagination.RespondWithError(c, http.StatusBadRequest, "Invalid pagination parameters")
+		return
+	}
+
+	// Retrieve the repository details
+	url, err := h.repositoryService.GetRepository(c, repo)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"statusCode": http.StatusNotFound, "message": err.Error()})
 		return
 	}
 
 	// Retrieve the total number of commits for the repository
-	totalCommits, err := h.commitService.GetCommitCount(url.Name)
-	fmt.Println(totalCommits)
+	totalCommits, err := h.commitService.GetCommitCount(c, url.Name)
 	if err != nil {
-		// Return 500 Internal Server Error if there's an error retrieving the commit count
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to retrieve total commits"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve total commits"})
 		return
 	}
 
-	// Calculate the total number of pages based on the total commits and limit
+	// Calculate total pages based on the total commits and limit
 	totalPages := int((totalCommits + int64(limit) - 1) / int64(limit))
+	if totalPages <= 0 {
+		c.JSON(http.StatusNotFound, gin.H{"statusCode": http.StatusNotFound, "message": "No commits found"})
+		return
+	}
 
 	// Retrieve the commits for the requested page and limit
-	commits, err := h.commitService.GetPaginatedCommits(url.Name, page, limit)
+	commits, err := h.commitService.GetPaginatedCommits(c, url.Name, page, limit)
 	if err != nil {
-		if len(commits) == 0 {
-			// Return 404 Not Found if no commits are found
-			c.JSON(http.StatusNotFound, gin.H{"statusCode": http.StatusNotFound, "message": "No commits found"})
-		} else {
-			// Return 500 Internal Server Error for other errors
-			c.JSON(http.StatusInternalServerError, gin.H{"statusCode": http.StatusInternalServerError, "message": "Server error"})
-		}
+		c.JSON(http.StatusNotFound, gin.H{"statusCode": http.StatusNotFound, "message": "No commits found"})
 		return
 	}
 
 	// Return the paginated commit data as JSON
-	c.JSON(http.StatusOK, gin.H{"statusCode": http.StatusFound, "data": models.PaginatedResponse{
-		CurrentPage: page,
-		TotalPages:  totalPages,
-		Commits:     commits,
-	}})
+	c.JSON(http.StatusOK, gin.H{
+		"statusCode": http.StatusOK,
+		"data": domain.PaginatedResponse{
+			CurrentPage: page,
+			TotalPages:  totalPages,
+			Commits:     commits,
+		},
+	})
 }
 
 // GetTopNCommitAuthors retrieves the top N commit authors and returns them as JSON
 func (h *CommitHandler) GetTopNCommitAuthors(c *gin.Context) {
-	// Parse the "n" parameter from the request to determine the number of top authors
+	repo := c.Param("repo")
+
+	// Parse the "n" parameter to determine the number of top authors
 	n, err := strconv.Atoi(c.Param("n"))
 	if err != nil || n <= 0 {
-		// Return 400 Bad Request if the "n" parameter is invalid
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid number of authors"})
 		return
 	}
 
-	// Parse the page and limit parameters from the query string
-	page, err := strconv.Atoi(c.Query("page"))
-	if err != nil || page < 1 {
-		page = 1
-	}
-
-	limit, err := strconv.Atoi(c.Query("limit"))
-	if err != nil || limit < 1 {
-		limit = 10
+	page, limit, err := pagination.ParsePaginationParams(c)
+	if err != nil {
+		pagination.RespondWithError(c, http.StatusBadRequest, "Invalid pagination parameters")
+		return
 	}
 
 	// Retrieve the top N commit authors from the repository service
-	authors, err := h.repositoryService.GetTopNCommitAuthors(n, page, limit)
+	authors, err := h.repositoryService.GetTopNCommitAuthors(c, repo, n, page, limit)
 	if err != nil {
-
-		// Return 500 Internal Server Error for other errors
 		c.JSON(http.StatusInternalServerError, gin.H{"statusCode": http.StatusInternalServerError, "message": "Server error"})
-
 		return
 	}
 	if len(authors) == 0 {
-		// Return 404 Not Found if no authors are found
 		c.JSON(http.StatusNotFound, gin.H{"statusCode": http.StatusNotFound, "message": "No authors found"})
 		return
 	}
+
 	// Return the top authors as JSON
 	c.JSON(http.StatusOK, authors)
+}
+
+// ResetCollection removes all commits for a specific repository and returns a success message
+func (h *CommitHandler) ResetCollection(c *gin.Context) {
+	owner := c.Query("owner")
+	repoName := c.Query("repo")
+
+	// Validate input
+	if owner == "" || repoName == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"statusCode": http.StatusBadRequest, "message": "Owner and repository name are required"})
+		return
+	}
+
+	// Remove all commits for the specified repository
+	ok, err := h.commitService.DeleteCommits(c, repoName)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"statusCode": http.StatusInternalServerError, "message": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"statusCode": http.StatusOK, "message": "Repository commits removed successfully"})
 }

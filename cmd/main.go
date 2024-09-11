@@ -2,95 +2,63 @@ package main
 
 import (
 	"context"
-	"github-service/internal/config"
-	"github-service/internal/database"
-	"github-service/internal/database/repository"
-	"github-service/internal/service"
+	"fmt"
+	"log"
+
+	"github-service/config"
+	"github-service/internal/adapters"
+	"github-service/internal/core/domain"
+	"github-service/internal/core/service"
 	"github-service/internal/web/handlers"
 	"github-service/internal/web/routes"
+	"github-service/pkg/logger"
+
 	"github.com/gin-gonic/gin"
-	"log"
-	"os"
-	"os/signal"
-	"syscall"
-	"time"
 )
 
 func main() {
-
-	// Create a cancellable context
+	// Create a cancellable context to manage lifecycle and cancellation
 	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel() // Ensure cancellation when done
+	defer cancel() // Ensure context cancellation on exit
 
 	// Load the application configuration
 	cfg, err := config.LoadConfig()
 	if err != nil {
 		log.Fatalf("Failed to load config: %v", err)
 	}
+	fmt.Println(cfg) // Print configuration for debugging purposes
 
-	// Initialize the database connection
-	db, err := database.Connect(config.GetDatabaseConfig(cfg, "dev"))
+	// Initialize the logger
+	logger.InitLogger()
+
+	// Set up storage components (Postgres and BadgerDB)
+	commitRepo, repositoryRepo, badgerService, err := adapters.SetupStorage(cfg)
 	if err != nil {
-		log.Fatalf("Failed to connect to database: %v", err)
+		log.Fatalf("Failed to setup storage: %v", err)
 	}
 
-	// Initialize repository instances
-	commitRepo, err := repository.NewCommitRepository(db)
-	if err != nil {
-		log.Fatalf("Failed to create commit repository: %v", err)
-	}
-	repositoryRepo, err := repository.NewRepository(db)
-	if err != nil {
-		log.Fatalf("Failed to create repository: %v", err)
+	// Initialize domain data for default repository
+	defaultRepoData := domain.RepoData{
+		RepoName: cfg.DEFAULT_REPO,
+		Owner:    cfg.DEFAULT_OWNER,
 	}
 
-	// Initialize service instances
-	commitService := service.NewCommitService(commitRepo, cfg)
-	repositoryService := service.NewRepositoryService(repositoryRepo, cfg)
+	// Set up core services with the initialized repositories
+	commitService, repositoryService, monitorService := service.SetupService(ctx, cfg, defaultRepoData, commitRepo, repositoryRepo, badgerService)
 
-	// Initialize the commit monitor service
-	commitMonitor := service.NewCommitMonitor(ctx, commitService, repositoryService)
-
-	// Retrieve configuration from environment variables
-	repoOwner := cfg.SEED_REPO_OWNER
-	repoName := cfg.SEED_REPO_NAME
-	beginFetchDateStr := cfg.BEGIN_FETCH_DATE
-
-	// Parse the beginFetchDate from the environment variable
-	beginFetchDate, err := time.Parse(time.RFC3339, beginFetchDateStr)
-	if err != nil {
-		log.Fatalf("Invalid BEGIN_FETCH_DATE format: %v", err)
-	}
-
-	// Seed the database with initial data starting from the defined date
-	if _, err := commitMonitor.AddRepository(repoOwner, repoName, beginFetchDate); err != nil {
-
-		log.Printf("Failed to add initial repository: %v", err)
-
-	}
-	// Start the background task that periodically fetches and stores repository data
-	go commitMonitor.StartDataFetchingTask(ctx, repoOwner, repoName)
-
-	// Handle graceful shutdown
-	go func() {
-		// Create a channel to listen for OS signals
-		sigs := make(chan os.Signal, 1)
-		signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
-
-		// Block until a signal is received
-		<-sigs
-		log.Println("Shutdown signal received, stopping the commit monitor...")
-		cancel() // Cancel the context to stop the background task
-	}()
-
-	// Initialize the Gin router and API routes
-	router := gin.Default()
+	// Create handlers for commit and repository operations
 	commitHandler := handlers.NewCommitHandler(commitService, repositoryService)
-	repositoryHandler := handlers.NewRepositoryHandler(repositoryService, commitMonitor)
+	repositoryHandler := handlers.NewRepositoryHandler(repositoryService, monitorService)
+
+	// Initialize Gin router and configure API routes
+	router := gin.Default()
 	routes.SetupAPIRoutes(router, commitHandler, repositoryHandler)
 
-	// Start the Gin HTTP server and listen on port 8080
-	if err := router.Run(":8080"); err != nil {
+	// Define the server port
+	PORT := fmt.Sprintf(":%s", cfg.PORT)
+
+	// Start the HTTP server and listen for incoming requests
+	if err := router.Run(PORT); err != nil {
 		log.Fatalf("Failed to start server: %v", err)
 	}
 }

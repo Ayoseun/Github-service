@@ -26,3 +26,6 @@ clean:
 .PHONY: logs
 logs:
 	$(DOCKER_COMPOSE) logs -f app
+
+test:
+	go test -v ./...

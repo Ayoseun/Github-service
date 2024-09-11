@@ -21,8 +21,8 @@ This Go-based service fetches data from the GitHub public API, stores the fetche
 **Getting Started**
 
 1. Prerequisites
-- Go 1.23 or later: Download [here](https://www.docker.com/products/docker-desktop/)
-- Docker: Ensure Docker is installed and running on your machine.
+- Go 1.23 or later: Download [here](https://go.dev/doc/install)
+- Docker: Ensure Docker is installed and running on your machine, you get docker [here](https://www.docker.com/products/docker-desktop/).
 
 2. Installation
 Clone the Repository:
@@ -327,9 +327,9 @@ type CommitServiceInterface interface {
 }
 
 7. Troubleshooting
-# WARNING- The database credentials are for testing only do not use in production
-- Common Issues:
+# WARNING- The database credentials are for testing only do not use in production.
 
+### Common Issues:
 Error: Database connection failed:
 Ensure your .env file is correctly configured with the right database URL.
 Verify that your PostgreSQL service is running.

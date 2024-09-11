@@ -1,10 +1,6 @@
-package models
+package github
 
-import (
-	"time"
-
-	"gorm.io/gorm"
-)
+import "time"
 
 type Commit struct {
 	Author      interface{} `json:"author"`
@@ -17,9 +13,9 @@ type Commit struct {
 		} `json:"author"`
 		CommentCount int `json:"comment_count"`
 		Committer    struct {
-			Date  string `json:"date"`
-			Email string `json:"email"`
-			Name  string `json:"name"`
+			Date  time.Time `json:"date"`
+			Email string    `json:"email"`
+			Name  string    `json:"name"`
 		} `json:"committer"`
 		Message string `json:"message"`
 		Tree    struct {
@@ -46,18 +42,16 @@ type Commit struct {
 	URL string `json:"url"`
 }
 
-type SavedCommit struct {
-	gorm.Model
-	Message    string    `json:"message"`
-	Author     string    `json:"author"`
-	Date       time.Time `json:"date"`
-	URL        string    `json:"url"`
-	Repository string    `json:"repository"`
-}
-
-// PaginatedResponse is the response structure for paginated commit data
-type PaginatedResponse struct {
-	CurrentPage int           `json:"current_page"`
-	TotalPages  int           `json:"total_pages"`
-	Commits     []SavedCommit `json:"commits"`
+type Repository struct {
+	Name             string    `json:"name"`
+	Description      string    `json:"description"`
+	URL              string    `json:"html_url"`
+	Language         string    `json:"language"`
+	ForksCount       int       `json:"forks_count"`
+	StarsGazersCount int       `json:"stargazers_count"`
+	OpenIssuesCount  int       `json:"open_issues_count"`
+	WatchersCount    int       `json:"watchers_count"`
+	SubscribersCount int       `json:"subscribers_count"`
+	CreatedAt        time.Time `json:"created_at"`
+	UpdatedAt        time.Time `json:"updated_at"`
 }
