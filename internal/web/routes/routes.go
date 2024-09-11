@@ -27,7 +27,7 @@ func SetupAPIRoutes(r *gin.Engine, commitHandler *handlers.CommitHandler, reposi
 	// Route to reset commits for a repository
 	// GET /repositories/:repo/reset
 	// Resets or clears commit data for a specific repository.
-	r.GET("/repositories/:repo/reset", commitHandler.ResetCollection) // Renamed handler to reflect reset operation
+	r.GET("/repositories/reset/:owner", commitHandler.ResetCollection) // Renamed handler to reflect reset operation
 
 	// Route to add a repository to the monitoring service
 	// GET /repositories/monitor/:owner

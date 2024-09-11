@@ -1,11 +1,11 @@
-package scheduler
+package service
 
 import (
 	"context"
 	"fmt"
 	"github-service/config"
 	"github-service/internal/core/domain"
-	"github-service/internal/core/service"
+
 	"github-service/internal/ports"
 	"github-service/pkg/logger"
 	"time"
@@ -14,22 +14,23 @@ import (
 )
 
 type Scheduler struct {
-	monitorService *service.MonitorService
+	monitorService *MonitorService
 	cfg            *config.Config
-	b              ports.BadgerImpl
+	badgerImpl     ports.BadgerImpl
 	schedulers     map[string]*gocron.Scheduler // Map to track schedulers by repo ID
 }
 
-func NewScheduler(monitorService *service.MonitorService, cfg *config.Config) *Scheduler {
+func NewScheduler(monitorService *MonitorService, cfg *config.Config, badgerImpl ports.BadgerImpl) *Scheduler {
 	return &Scheduler{
 		monitorService: monitorService,
 		cfg:            cfg,
 		schedulers:     make(map[string]*gocron.Scheduler),
+		badgerImpl:     badgerImpl,
 	}
 }
 
-func (s *Scheduler) ScheduleMonitoring(r domain.RepoData) {
-	repoDataArray, _ := s.b.GetRepoArray("repos")
+func (s *Scheduler) ScheduleMonitoring() {
+	repoDataArray, _ := s.badgerImpl.GetRepoArray("repos")
 	for _, repo := range repoDataArray {
 		repoKey := repo.RepoName // Use RepoName as the key for the schedulers map
 		logger.LogInfo(fmt.Sprintf("Monitoring scheduled for repository: %s", repoKey))

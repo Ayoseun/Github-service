@@ -108,7 +108,7 @@ func (h *CommitHandler) GetTopNCommitAuthors(c *gin.Context) {
 
 // ResetCollection removes all commits for a specific repository and returns a success message
 func (h *CommitHandler) ResetCollection(c *gin.Context) {
-	owner := c.Query("owner")
+	owner := c.Param("owner")
 	repoName := c.Query("repo")
 
 	// Validate input

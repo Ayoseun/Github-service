@@ -42,7 +42,6 @@ func SetupStorage(cfg config.Config) (ports.PostgresCommit, ports.PostgresReposi
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("failed to save initial data to badger: %w", err)
 	}
-	badgerService.Close()
 
 	return commitRepo, repositoryRepo, badgerService, nil
 }

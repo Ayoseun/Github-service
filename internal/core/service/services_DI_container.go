@@ -5,7 +5,9 @@ import (
 	"github-service/config"
 	"github-service/internal/adapters/github"
 	"github-service/internal/core/domain"
+
 	"github-service/internal/ports"
+
 	"log"
 )
 
@@ -24,6 +26,8 @@ func SetupService(ctx context.Context, cfg config.Config, rData domain.RepoData,
 	if err := monitorService.MonitorRepository(ctx, rData); err != nil {
 		log.Printf("Failed to add initial repository: %v", err)
 	}
+
+	go NewScheduler(monitorService, &cfg, bs).ScheduleMonitoring()
 
 	return commitService, repositoryService, monitorService
 }

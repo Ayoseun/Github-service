@@ -89,22 +89,6 @@ go run cmd/main.go
 ```
 ***note that this will require you to already have a running postgres server***
 
-Ininalizing he monioring service requires a defaul value from .ENV which may include 
-begin dae, end dae,repo name and repo owner
-- Add Repository Without a Range:
-```sh
-commitMonitor.AddRepository(ctx, "owner", "repo", time.Now())
-```
-This will fetch commits starting from time.Now() and monitor the repository.
-
-- Add Repository With a Range:
-```sh
-startDate := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
-endDate := time.Date(2024, 1, 31, 23, 59, 59, 0, time.UTC)
-commitMonitor.AddRepository(ctx, "owner", "repo", time.Now(), startDate, endDate)
-
-```
-This will fetch commits between startDate and endDate and then start monitoring the repository.
 
 ### Service Endpoints:
 
@@ -220,12 +204,12 @@ repo : The name of the repository (e.g., chromium).
 Add new repository to monitor.
 
 ```sh
-GET /repositories/monitor
+GET /repositories/monitor/:owner
 ```
 Example URL:
 
 ```c
-http://localhost:8080/repositories/monitor?owner=golang&repo=go&start_date=2023-01-01T00:00:00Z
+http://localhost:8080/repositories/monitor/golang?repo=go&start_date=2023-01-01T00:00:00Z
 ```
 - Query Parameters:
 
@@ -242,10 +226,10 @@ start_date : The defined N history to begin pulling from.
 
 ```
 
-Remove a repository from monitor service.
+Remove a repository from monitor service and delete it from DB.
 
 ```sh
-DELETE /repositories/monitor
+DELETE /repositories/monitor/:owner
 ```
 Example URL:
 
@@ -265,28 +249,27 @@ repo : The repository to add.
 }
 ```
 
-Add new repository to monitor with defined pulling commit history.
+Reset a repository commit collection.
 
 ```sh
-GET /repositories/monitor
+GET /repositories/reset/:owner
 ```
 Example URL:
 
 ```c
-http://localhost:8080/repositories/monitor?owner=golang&repo=go&start_date=2023-01-01T00:00:00Z&end_date=2024-01-01T00:00:00Z
+http://localhost:8080/repositories/reset/golang?repo=go
 ```
 - Query Parameters:
 
 owner (required): The owner of the repo
 repo : The repository to add.
-start_date : The defined N history to begin pulling from.
-end_date : The defined N history to begin pulling till.
+
 
 - Response:
 ```json
 {
     "statusCode":200,
-    "message": "Repository added successfully"
+    "message": "Repository commits removed successfully"
 }
 
 ```

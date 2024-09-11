@@ -26,12 +26,18 @@ WORKDIR /app
 COPY --from=builder /app/main .
 
 # Create and set up the .env file
-RUN echo "DATABASE_DEV_URL=postgres://postgres:Yourp@sswoird@db:5432/github_test" > .env \
-    && echo "DATABASE_PROD_URL=postgresql://github_test_user:MfZyIf6vkrVm0O4YylZi3ig3MG3TV4VF@dpg-cr2kribtq21c73fa9kk0-a.oregon-postgres.render.com/github_test" >> .env \
-    && echo "BASE_URL=https://api.github.com/repos" >> .env \
-    && echo "SEED_REPO_OWNER=chromium" >> .env \
-    && echo "SEED_REPO_NAME=chromium" >> .env \
-    && echo "BEGIN_FETCH_DATE=2022-12-09T00:00:00Z" >> .env
+RUN echo "BASE_URL=https://api.github.com/repos" > .env \
+    && echo "GITHUB_TOKEN=" >> .env \
+    && echo "DEFAULT_OWNER=chromium" >> .env \
+    && echo "DEFAULT_REPO=chromium" >> .env \
+    && echo "BEGIN_FETCH_DATE=2023-01-01T00:00:00Z" >> .env \
+    && echo "PORT=8080" >> .env \
+    && echo "POSTGRES_USER=postgres" >> .env \
+    && echo "POSTGRES_PASSWORD=Yourp@sswoird" >> .env \
+    && echo "POSTGRES_HOST=db" >> .env \
+    && echo "POSTGRES_DB=github_test" >> .env \
+    && echo "POLL_INTERVAL=2" >> .env \
+    && echo "PER_PAGE=100" >> .env
 
 # Expose the port on which the application will run
 EXPOSE 8080

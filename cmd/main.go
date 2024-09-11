@@ -4,6 +4,10 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net/http"
+	"os"
+	"os/signal"
+	"time"
 
 	"github-service/config"
 	"github-service/internal/adapters"
@@ -26,7 +30,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to load config: %v", err)
 	}
-	fmt.Println(cfg) // Print configuration for debugging purposes
 
 	// Initialize the logger
 	logger.InitLogger()
@@ -57,8 +60,44 @@ func main() {
 	// Define the server port
 	PORT := fmt.Sprintf(":%s", cfg.PORT)
 
-	// Start the HTTP server and listen for incoming requests
-	if err := router.Run(PORT); err != nil {
-		log.Fatalf("Failed to start server: %v", err)
+	gracefulShutdown(router, PORT)
+
+}
+
+func gracefulShutdown(router *gin.Engine, port string) {
+	// Create a channel to listen for OS signals
+	quit := make(chan os.Signal)
+	signal.Notify(quit, os.Interrupt)
+
+	// Create a server instance with a timeout
+	srv := &http.Server{
+		Addr:    port,
+		Handler: router,
+		// Optional: configure timeouts as needed
+		ReadTimeout:  10 * time.Second,
+		WriteTimeout: 10 * time.Second,
+		IdleTimeout:  10 * time.Second,
 	}
+
+	// Start the server in a goroutine
+	go func() {
+		log.Println("Server started on :8080")
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("ListenAndServe: %s\n", err)
+		}
+	}()
+
+	// Wait for interrupt signal to gracefully shutdown the server
+	<-quit
+	log.Println("Shutting down server...")
+
+	// Create a timeout context for shutting down the server
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	// Attempt to gracefully shutdown the server
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Fatalf("Server forced to shutdown: %s", err)
+	}
+	log.Println("Server exiting")
 }
