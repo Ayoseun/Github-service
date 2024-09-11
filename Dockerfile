@@ -36,7 +36,7 @@ RUN echo "BASE_URL=https://api.github.com/repos" > .env \
     && echo "POSTGRES_PASSWORD=Yourp@sswoird" >> .env \
     && echo "POSTGRES_HOST=db" >> .env \
     && echo "POSTGRES_DB=github_test" >> .env \
-    && echo "POLL_INTERVAL=2" >> .env \
+    && echo "POLL_INTERVAL=3600" >> .env \
     && echo "PER_PAGE=100" >> .env
 
 # Expose the port on which the application will run
